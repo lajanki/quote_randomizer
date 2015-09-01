@@ -37,39 +37,38 @@ When run without any command line arguments the script generates a randomized qu
 Command line arguments:
 
 --rebuild-database
-
-Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
+  * Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
 
 --rebuild-database quick
-*Rebuilds the database by executing quotes.sql. Does not modify the dictionary.
+  * Rebuilds the database by executing quotes.sql. Does not modify the dictionary.
 
 --song
-*Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
+  * Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
 
 --tags
-Shows info on all tags used to categorize words into classes.
+  * Shows info on all tags used to categorize words into classes.
 
 --size
-Shows the size of the databse.
+  * Shows the size of the databse.
 
 --bot quote
-Generates a quote and posts it to Twitter. Requires access tokens and API keys from Twitter.
+  * Generates a quote and posts it to Twitter. Requires access tokens and API keys from Twitter.
 
 --bot song
-Generates a song lyric and posts to Twitter. Requires access tokens and API keys from Twitter.
+  * Generates a song lyric and posts to Twitter. Requires access tokens and API keys from Twitter.
 
 Maintenance commands:
 --init-song
-    Changes the status codes for the lyrics table back to initial values.
+  * Changes the status codes for the lyrics table back to initial values.
 --set-song <name>
-Sets the given song to be the next one read by the --song -switch. See the 'search' column of the lyrics table for valid names.
+  * Sets the given song to be the next one read by the --song -switch. See the 'search' column of the lyrics table for valid names.
   --find-duplicates
-Prints the first instance of quotes having a duplicate in the database.
+  * Prints the first instance of quotes having a duplicate in the database.
 
 
---------------
-File structure
---------------
+
+## File structure
+
 * quote.py
    -The main script.
 * keys.json
