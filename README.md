@@ -90,5 +90,5 @@ Command line arguments:
        * status, whereas randomizing a quote is intended to happen by choosing a random quote from the database, song lyrics need to be processed in order. The satus code tells the script whether the last line of the song was encountered (satus code of 1). After the last line is processed the code changes to 2 telling the script to do nothing but wait for permission to move to the next song. Once at least one regular quote is generated the code changes to 3 and the next time the --song switch is used the script will start the next song.
 
 ___
-* Tested on Python 2.7.8
+* Tested on Python 2.7.8, the raw_input() call on line 501 will probably cause a syntax error on version 3. Otherwise should work on later versions as well.
 * Lauri Ajanki 31.8.2015 
