@@ -16,9 +16,9 @@ quotes: pairs of quotes and authors taken from real people, movies and
 lyrics: full lyrics to songs
 dictionary: a table of words parsed from the other tables.
 
----------
-Requires:
----------
+
+## Requires:
+
 Python modules:
  * Natural Language Toolkit (nltk)
      http://www.nltk.org/index.html
@@ -30,9 +30,9 @@ Additionally the Tweeting feature requires:
  * You will need to register a Twitter app to get your own Twitter access tokens and developer keys, see
      https://dev.twitter.com/oauth/overview/application-owner-access-tokens      
 
------
-Usage
------
+
+## Usage
+
 When run without any command line arguments the script generates a randomized quote to console window.
 Command line arguments:
 
@@ -57,12 +57,14 @@ Command line arguments:
 --bot song
   * Generates a song lyric and posts to Twitter. Requires access tokens and API keys from Twitter.
 
-Maintenance commands:
+### Maintenance commands:
 --init-song
   * Changes the status codes for the lyrics table back to initial values.
+
 --set-song <name>
-  * Sets the given song to be the next one read by the --song -switch. See the 'search' column of the lyrics table for valid names.
-  --find-duplicates
+  * Sets the given song to be the next one read by the --song switch. See the 'search' column of the lyrics table for valid names.
+
+--find-duplicates
   * Prints the first instance of quotes having a duplicate in the database.
 
 
@@ -70,21 +72,22 @@ Maintenance commands:
 ## File structure
 
 * quote.py
-   -The main script.
+  - The main script.
 * keys.json
-   -An external file used to store Twitter access tokens and keys. Note that this file is just a shell to store your own keys. Only required for the tweeting component, ie. when running with '--bot quote' or '--bot song'.
+  - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required for the tweeting component, ie. when running with '--bot quote' or '--bot song'.
 * quote.sh
-   -A Linux script to run quote.py. Automatically runs it again if the first try doesn't provide a valid quote.
+  - A Linux script to run quote.py. Automatically runs it again if the first try doesn't provide a valid quote.
 * quotes.sql
-   -A file used to create the database. Updating the database is done by manually updating this file and running the main script with the --rebuild-database switch.
+  - A file used to create the database. Updating the database is done by manually updating this file and running the main script with the --rebuild-database switch.
 * quotes.db
-   -The databse. Contains three tables: quotes, lyrics and dictionary with creation schemas of
-quotes: a pair of (quote, author) records
-   lyrics: a tuple of (title, search, verse, status) records, where
-     -title is the title of the song
-     -search is the <name> in --set-song <name> switch and used to tell the main script to use this song as the one to process next. This is usually the same as title.
-     -verse is a a part of the lyric. The actual verses of the song are split into small enough parts to fit into a tweet.
-     -status, an integer telling the main script that this is the last line of the current song. The intended usage of the --song switch is to process the song in order until it's finished, (as opposed to the behavior with quotes where a random quote is chosen). The status codes tell the main script whether its processing the last line and whether it's OK to move to the next. Once a song is finished, you need to generate at least one regular quote to allow the --song switch to move on to the next song.
+  - The databse containing three tables:
+    - quotes: a pair of (quote, author) records
+    - lyrics: a tuple of (title, search, verse, status) records, where
+       * title, the title of the song
+       * search, a search term given to the --set-song switch. Tells the main script to start this song the next time the --song switch is used. This is usually the same as title.
+       * verse, a line or two of the actual lyrics. The purpose is to split the actual verses into small enough pieces to fit into a tweet.
+       * status, whereas randomizing a quote is intended to happen by choosing a random quote from the database, song lyrics need to be processed in order. The satus code tells the script whether the last line of the song was encountered (satus code of 1). After the last line is processed the code changes to 2 telling the script to do nothing but wait for permission to move to the next song. Once at least one regular quote is generated the code changes to 3 and the next time the --song switch is used the script will start the next song.
 
-Tested on Python 2.7.8
-Lauri Ajanki 31.8.2015 
+___
+* Tested on Python 2.7.8
+* Lauri Ajanki 31.8.2015 
