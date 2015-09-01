@@ -22,7 +22,7 @@ Requires:
 Python modules:
  * Natural Language Toolkit (nltk)
      http://www.nltk.org/index.html
- * sqlite3  (should come with a newer version of python)
+ * sqlite3  (part of the standard library on newer Python versions)
 Additionally the Tweeting feature requires:
  * Twython:
      https://twython.readthedocs.org/en/latest/
@@ -34,16 +34,16 @@ Additionally the Tweeting feature requires:
 Usage
 -----
 When run without any command line arguments the script generates a randomized quote to console window.
-command line arguments:
+Command line arguments:
 
 --rebuild-database
-Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
+*Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
 
 --rebuild-database quick
-Rebuilds the database by executing quotes.sql. Does not modify the dictionary.
+*Rebuilds the database by executing quotes.sql. Does not modify the dictionary.
 
 --song
-Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
+*Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
 
 --tags
 Shows info on all tags used to categorize words into classes.
