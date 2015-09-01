@@ -23,12 +23,13 @@ Python modules:
  * Natural Language Toolkit (nltk)
      http://www.nltk.org/index.html
  * sqlite3  (part of the standard library on newer Python versions)
+
 Additionally the Tweeting feature requires:
  * Twython:
      https://twython.readthedocs.org/en/latest/
- Keys:
- * You will need to register a Twitter app to get your own Twitter access tokens and developer keys, see
-     https://dev.twitter.com/oauth/overview/application-owner-access-tokens      
+
+Keys:
+ * You will need to register a Twitter app to get your own Twitter access tokens and developer keys, see https://dev.twitter.com/oauth/overview/application-owner-access-tokens Store these keys to the keys.json file.   
 
 
 ## Usage
