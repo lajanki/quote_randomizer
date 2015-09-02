@@ -58,7 +58,7 @@ Command line arguments:
 --bot song
   * Generates a song lyric and posts to Twitter. Requires access tokens and API keys from Twitter.
 
-##### Maintenance commands:
+##### Maintenance commands
 --init-song
   * Changes the status codes for the lyrics table back to initial values.
 
@@ -67,6 +67,9 @@ Command line arguments:
 
 --find-duplicates
   * Prints the first instance of quotes having a duplicate in the database.
+  
+--find-invalid
+  * Finds database quotes which do not contain enough valid tags for switching.
 
 
 
