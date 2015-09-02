@@ -17,7 +17,7 @@ lyrics: full lyrics to songs
 dictionary: a table of words parsed from the other tables.
 
 
-## Requires:
+## Requirements
 
 Python modules:
  * Natural Language Toolkit (nltk)
@@ -37,9 +37,8 @@ Keys:
 When run without any command line arguments the script generates a randomized quote to console window.
 Command line arguments:
 
---rebuild-database  
-
-Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
+--rebuild-database
+ *  Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
 
 --rebuild-database quick
   * Rebuilds the database by executing quotes.sql. Does not modify the dictionary.
