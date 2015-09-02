@@ -409,7 +409,7 @@ INSERT INTO quotes VALUES ('Creativity is knowing how to hide your sources', 'C.
 INSERT INTO quotes VALUES ('I speak to everyone in the same way, whether he is the garbage man or the president of the university.', 'Albert Einstein' );
 INSERT INTO quotes VALUES ('Those who don''t believe in magic will never find it.', 'Roald Dahl' );
 
-INSERT INTO quotes VALUES ('What Happens in Vegas, Stays in Vegas.', 'Advertising slogan');
+
 INSERT INTO quotes VALUES ('The best friend a man has is his dog.', 'George Graham Vest' );
 INSERT INTO quotes VALUES ('The customer is always right.', 'Harry Gordon Selfridge' );
 INSERT INTO quotes VALUES ('Friends don’t let friends drive drunk.', 'public service ad slogan' );

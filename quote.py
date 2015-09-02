@@ -45,7 +45,7 @@ from random import shuffle, randint, random, choice
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
-CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG" ]
+CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
 
 
 #*****************
@@ -261,6 +261,7 @@ def switch(string):
 
 	# get random new words from the dictionary (making sure the new tags are the same as
 	# the old ones)
+	# Note: there needs to enough words with the correct tags in the database for this to work.
 	new_words = []
 	with con:
 		for word, tag in words_to_change:
@@ -432,7 +433,36 @@ def normalize_tokens(tokens):
 	# filter out the lone parts beginning with "'"
 	normalized = [token for token in tokens if token != "DEL"]
 	return normalized
-		
+	
+
+# Finds database quotes which do not contain enough valid tags for switching
+def find_invalid():
+	con = lite.connect("./quotes.db")
+	cur = con.cursor()
+	invalids = []
+	
+	for row in cur.execute("SELECT quote FROM quotes"):
+		quote = row[0]
+		invalid = True
+		tokens = word_tokenize(quote)
+		tokens = normalize_tokens(tokens)
+		tagged = pos_tag(tokens)
+
+		for word, tag in tagged:
+			if tag in CLASSES:
+				invalid = False
+				break
+
+		if invalid:
+			invalids.append(tagged)
+
+	if invalids:
+		print "Invalid quotes:"
+		for item in invalids:
+			print item
+	else:
+		print "No invalid quotes"
+
 
 # Testfunction for normalization.
 # Not in use.
@@ -505,7 +535,7 @@ def main():
 		sys.exit()
 
 	try:
-		opts, args = getopt.getopt(sys.argv[1:],"", ["size", "tags", "rebuild-database", "song", "init-song", "set-song=", "find-duplicates", "bot="])
+		opts, args = getopt.getopt(sys.argv[1:],"", ["size", "tags", "rebuild-database", "song", "init-song", "set-song=", "find-duplicates", "find-invalid", "bot="])
 	except getopt.GetoptError as err:
 		print str(err)
 		usage()
@@ -571,6 +601,9 @@ def main():
 							   HAVING COUNT(*) > 1"""
 					for dupe in cur.execute(query):
 						print dupe[0], dupe[1]
+
+			elif opt == "--find-invalid":
+				find_invalid()
 
 			# Randomize a quote or a song and post the result to Twitter using twython.
 			# Requires Twitter access tokens and keys.
