@@ -8,10 +8,10 @@
 #    tweets a quote
 
 python ./quote.py $1 $2
-date +"%d.%m.%Y-%H:%M"
 
 ret=$?
 if [ $ret -ne 0 ]; then
   echo "Not a valid quote, trying again..."
   python ./quote.py $1 $2
 fi
+echo $(date +"%d.%m.%Y-%H:%M")
