@@ -91,5 +91,6 @@ Command line arguments:
     - dictionary: a table of words parsed from the other two tables together with a tag identifying each word as a member of a specific word class. Using this tag a suitable word is chosen when randomizing quotes (ie. nouns get replaced by nouns, adjectives by adjectives etc.). The tag is determied by nltk.pos_tag() function.
 
 ___
-* Tested on Python 2.7.8, the raw_input() call on line 501 will probably cause a syntax error on version 3. Otherwise should work on later versions as well.
-* Lauri Ajanki 31.8.2015 
+Tested on Python 2.7.8, to make this work on version 3 you will probably need to change the print syntax as well as the raw_input() call on line 531.  
+
+Lauri Ajanki 31.8.2015 
