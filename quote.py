@@ -465,7 +465,7 @@ def find_invalid():
 
 
 # Testfunction for normalization.
-# Not in use.
+# Not in use, run to see the differences between nltk.word_tokenize() and normalize_tokens()
 def test_normalize():
 	tokens = word_tokenize("Not Penny's boat. they're lying!")
 	tokens2 = word_tokenize("It's everything you've ever wanted, kid.")

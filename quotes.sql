@@ -1,40 +1,44 @@
---sources: http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
+--luo taulukon lausahduksista
+--lähteet: http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
 --http://www.cs.virginia.edu/~robins/quotes.html
 --http://www.quotery.com/lists/top-500-greatest-quotes-of-all-time/
 --http://www.inc.com/lolly-daskal/100-motivational-quotes-that-will-inspire-you-to-succeed.html
+
+
 DROP TABLE IF EXISTS quotes;
 CREATE TABLE quotes (quote TEXT NOT NULL, author TEXT NOT NULL);
 
 
---dictionary creation limits
+--dictionaryn lukuraja
 INSERT INTO quotes VALUES ('START', 'START');
 INSERT INTO quotes VALUES ('END', 'END');
 
 
+
 INSERT INTO quotes VALUES ('Strive not to be a success, but rather to be of value.', 'Albert Einstein');
 INSERT INTO quotes VALUES ('I attribute my success to this: I never gave or took any excuse.', 'Florence Nightingale');
-INSERT INTO quotes VALUES ('You miss 100% of the shots you don’t take.', 'Wayne Gretzky');
+INSERT INTO quotes VALUES ('You miss 100% of the shots you don''t take.', 'Wayne Gretzky');
 INSERT INTO quotes VALUES ('The most difficult thing is the decision to act, the rest is merely tenacity.', 'Amelia Earhart');
 INSERT INTO quotes VALUES ('We become what we think about.', 'Earl Nightingale');
 INSERT INTO quotes VALUES ('The best time to plant a tree was 20 years ago. The second best time is now.', 'Chinese Proverb');
 INSERT INTO quotes VALUES ('Eighty percent of success is showing up.', 'Woody Allen');
-INSERT INTO quotes VALUES ('Winning isn’t everything, but wanting to win is.', 'Vince Lombardi');
+INSERT INTO quotes VALUES ('Winning isn''t everything, but wanting to win is.', 'Vince Lombardi');
 INSERT INTO quotes VALUES ('Every child is an artist.  The problem is how to remain an artist once he grows up.', 'Pablo Picasso');
 INSERT INTO quotes VALUES ('Success is liking yourself, liking what you do, and liking how you do it.', 'Maya Angelou');
 
 INSERT INTO quotes VALUES ('Either you run the day, or the day runs you.', 'Jim Rohn');
-INSERT INTO quotes VALUES ('Whether you think you can or you think you can’t, you’re right.', 'Henry Ford');
+INSERT INTO quotes VALUES ('Whether you think you can or you think you can''t, you''re right.', 'Henry Ford');
 INSERT INTO quotes VALUES ('The two most important days in your life are the day you are born and the day you find out why.', 'Mark Twain');
-INSERT INTO quotes VALUES ('Life shrinks or expands in proportion to one’s courage.', 'Anais Nin');
+INSERT INTO quotes VALUES ('Life shrinks or expands in proportion to one''s courage.', 'Anais Nin');
 INSERT INTO quotes VALUES ('There is only one way to avoid criticism: do nothing, say nothing, and be nothing.', 'Aristotle');
-INSERT INTO quotes VALUES ('Believe you can and you’re halfway there.', 'Theodore Roosevelt');
+INSERT INTO quotes VALUES ('Believe you can and you''re halfway there.', 'Theodore Roosevelt');
 INSERT INTO quotes VALUES ('We can easily forgive a child who is afraid of the dark; the real tragedy of life is when men are afraid of the light.', 'Plato');
 INSERT INTO quotes VALUES ('Success is walking from failure to failure with no loss of enthusiasm.', 'Winston Churchill');
 INSERT INTO quotes VALUES ('Life is not measured by the number of breaths we take, but by the moments that take our breath away.', 'Maya Angelou');
 INSERT INTO quotes VALUES ('Never make someone a priority when all you are to them is an option.', 'Maya Angelou');
 
 INSERT INTO quotes VALUES ('We must believe that we are gifted for something, and that this thing, at whatever cost, must be attained.', 'Marie Curie');
-INSERT INTO quotes VALUES ('I didn’t fail the test. I just found 100 ways to do it wrong.', 'Benjamin Franklin');
+INSERT INTO quotes VALUES ('I didn''t fail the test. I just found 100 ways to do it wrong.', 'Benjamin Franklin');
 INSERT INTO quotes VALUES ('A person who never made a mistake never tried anything new.', 'Albert Einstein');
 INSERT INTO quotes VALUES ('You become what you believe.', 'Oprah Winfrey');
 INSERT INTO quotes VALUES ('I would rather die of passion than of boredom.', 'Vincent van Gogh');
@@ -45,9 +49,9 @@ INSERT INTO quotes VALUES ('Dream big and dare to fail.', 'Norman Vaughan');
 INSERT INTO quotes VALUES ('The distance between insanity and genius is measured only by success.', 'Bruce Feirstein');
 
 INSERT INTO quotes VALUES ('Remember no one can make you feel inferior without your consent.', 'Eleanor Roosevelt');
-INSERT INTO quotes VALUES ('The question isn’t who is going to let me; it’s who is going to stop me.', 'Ayn Rand');
+INSERT INTO quotes VALUES ('The question isn''t who is going to let me; it''s who is going to stop me.', 'Ayn Rand');
 INSERT INTO quotes VALUES ('When everything seems to be going against you, remember that the airplane takes off against the wind, not with it.', 'Henry Ford');
-INSERT INTO quotes VALUES ('It''s not the years in your life that count. It’s the life in your years.', 'Abraham Lincoln');
+INSERT INTO quotes VALUES ('It''s not the years in your life that count. It''s the life in your years.', 'Abraham Lincoln');
 INSERT INTO quotes VALUES ('Either write something worth reading or do something worth writing.', 'Benjamin Franklin');
 INSERT INTO quotes VALUES ('The only way to do great work is to love what you do.', 'Steve Jobs');
 INSERT INTO quotes VALUES ('Moral indignation is jealousy with a halo.', 'H. G. Wells');
@@ -214,15 +218,15 @@ INSERT INTO quotes VALUES ('Whenever you find yourself on the side of the majori
 INSERT INTO quotes VALUES ('Great minds discuss ideas; average minds discuss events; small minds discuss people.', 'Eleanor Roosevelt'); 
 INSERT INTO quotes VALUES ('A successful man is one who can lay a firm foundation with the bricks others have thrown at him.', 'David Brinkley');
 INSERT INTO quotes VALUES ('Live as if you were to die tomorrow. Learn as if you were to live forever.', 'Mahatma Gandhi' );
-INSERT INTO quotes VALUES ('Twenty years from now you will be more disappointed by the things that you didn’t do than by the ones you did do.', 'Mark Twain' );
+INSERT INTO quotes VALUES ('Twenty years from now you will be more disappointed by the things that you didn''t do than by the ones you did do.', 'Mark Twain' );
 INSERT INTO quotes VALUES ('The difference between a successful person and others is not a lack of strength, not a lack of knowledge, but rather a lack of will.', 'Vince Lombardi');
 INSERT INTO quotes VALUES ('It is our choices, that show what we truly are, far more than our abilities.', 'J. K Rowling');
 INSERT INTO quotes VALUES ('You have to learn the rules of the game. And then you have to play better than anyone else.', 'Albert Einstein' );
 INSERT INTO quotes VALUES ('The successful warrior is the average man, with laser-like focus.', 'Bruce Lee');
 INSERT INTO quotes VALUES ('Develop success from failures. Discouragement and failure are two of the surest stepping stones to success.', 'Dale Carnegie');
-INSERT INTO quotes VALUES ('If you genuinely want something, don’t wait for it – teach yourself to be impatient.', 'Gurbaksh Chanal' );
+INSERT INTO quotes VALUES ('If you genuinely want something, don''t wait for it – teach yourself to be impatient.', 'Gurbaksh Chanal' );
 
-INSERT INTO quotes VALUES ('Don’t let the fear of losing be greater than the excitement of winning.', 'Robert Kiyosaki'); 
+INSERT INTO quotes VALUES ('Don''t let the fear of losing be greater than the excitement of winning.', 'Robert Kiyosaki'); 
 INSERT INTO quotes VALUES ('I cannot live without books.', 'Thomas Jefferson');
 INSERT INTO quotes VALUES ('The books that the world calls immoral are the books that show the world its own shame.', 'Oscar Wilde' );
 INSERT INTO quotes VALUES ('There is creative reading as well as creative writing.', 'Ralph Waldo Emerson' );
@@ -275,11 +279,11 @@ INSERT INTO quotes VALUES ('The man who reads nothing at all is better educated 
 INSERT INTO quotes VALUES ('Keep your friends close, but your enemies closer.', 'Sun Tzu' );
 INSERT INTO quotes VALUES ('We look forward to the time when the Power of Love will replace the Love of Power. Then will our world know the blessings of peace.', 'William Ewart Gladstone' );
 INSERT INTO quotes VALUES ('It is better to remain silent at the risk of being thought a fool, than to talk and remove all doubt of it.', 'Maurice Switzer' );
-INSERT INTO quotes VALUES ('If opportunity doesn’t knock, build a door.', 'Milton Berle' );
+INSERT INTO quotes VALUES ('If opportunity doesn''t knock, build a door.', 'Milton Berle' );
 
 INSERT INTO quotes VALUES ('Everything in moderation, including moderation.', 'Oscar Wilde' );
 INSERT INTO quotes VALUES ('The trouble with eating Italian food is that five or six days later, you''re hungry again.', 'George Miller' );
-INSERT INTO quotes VALUES ('Always borrow money from a pessimist. He won’t expect it back.', 'Oscar Wilde' );
+INSERT INTO quotes VALUES ('Always borrow money from a pessimist. He won''t expect it back.', 'Oscar Wilde' );
 INSERT INTO quotes VALUES ('Courage is contagious. When a brave man takes a stand, the spines of others are stiffened.', 'Billy Graham' );
 INSERT INTO quotes VALUES ('Patience is something you admire in the driver behind you, but not in one ahead.', 'Bill McGlashen' );
 INSERT INTO quotes VALUES ('It is the mark of an educated mind to be able to entertain a thought without accepting it.', 'Aristotle' );
@@ -292,7 +296,7 @@ INSERT INTO quotes VALUES ('No man is rich enough to buy back his past.', 'Oscar
 INSERT INTO quotes VALUES ('To the world you may be just one person, but to one person you may be the world.', 'Brandi Snyder' );
 INSERT INTO quotes VALUES ('It''s useless to hold a person to anything he says while he''s in love, drunk, or running for office.', 'Shirley MacLaine' );
 INSERT INTO quotes VALUES ('Never tell your problems to anyone... 20% don''t care and the other 80% are glad you have them.', 'Lou Holtz' );
-INSERT INTO quotes VALUES ('There’s zero correlation between being the best talker and having the best ideas.', 'Susan Cain' );
+INSERT INTO quotes VALUES ('There''s zero correlation between being the best talker and having the best ideas.', 'Susan Cain' );
 INSERT INTO quotes VALUES ('Failure is the condiment that gives success its flavor.', 'Truman Capote' );
 INSERT INTO quotes VALUES ('In dreams and in love there are no impossibilities.', 'Janos Arany' );
 INSERT INTO quotes VALUES ('He, who will not reason, is a bigot; he, who cannot, is a fool; and he, who dares not, is a slave.', 'William Drummond' );
@@ -304,30 +308,30 @@ INSERT INTO quotes VALUES ('The only thing worse than being blind is having sigh
 INSERT INTO quotes VALUES ('Always forgive your enemies; nothing annoys them so much.', 'Oscar Wilde' );
 INSERT INTO quotes VALUES ('It is easier to judge the mind of a man by his questions rather than his answers.', 'Pierre-Marc-Gaston De Levis' );
 INSERT INTO quotes VALUES ('Love all, trust a few, do wrong to none.', 'William Shakespeare' );
-INSERT INTO quotes VALUES ('Don’t look for big things, just do small things with great love.', 'Mother Teresa' );
+INSERT INTO quotes VALUES ('Don''t look for big things, just do small things with great love.', 'Mother Teresa' );
 INSERT INTO quotes VALUES ('Without music, life would be a mistake.', 'Friedrich Nietzsche' );
 INSERT INTO quotes VALUES ('You must be the change that you wish to see in the world.', 'Mahatma Gandhi' );
 INSERT INTO quotes VALUES ('You only live once, but if you do it right, once is enough.', 'Mae West' );
 INSERT INTO quotes VALUES ('The cave you fear to enter holds the treasure you seek.', 'Joseph Campbell' );
 
-INSERT INTO quotes VALUES ('If you don’t build your dream, someone else will hire you to help them build theirs.', 'Dhirubhai Ambani' );
+INSERT INTO quotes VALUES ('If you don''t build your dream, someone else will hire you to help them build theirs.', 'Dhirubhai Ambani' );
 INSERT INTO quotes VALUES ('Things come apart so easily when they have been held together with lies.', 'Dorothy Allison' );
 INSERT INTO quotes VALUES ('Let him who would enjoy a good future waste none of his present.', 'Roger Babson' );
 INSERT INTO quotes VALUES ('Don''t cry because it''s over, smile because it happened.', 'Dr. Seuss' );
 INSERT INTO quotes VALUES ('To handle yourself, use your head; to handle others, use your heart.', 'Eleanor Roosevelt' );
 INSERT INTO quotes VALUES ('Too many of us are not living our dreams because we are living our fears.', 'Les Brown' );
 INSERT INTO quotes VALUES ('I am not a product of my circumstances. I am a product of my decisions.', 'Stephen Covey' );
-INSERT INTO quotes VALUES ('The most common way people give up their power is by thinking they don’t have any. ', 'Alice Walker' );
+INSERT INTO quotes VALUES ('The most common way people give up their power is by thinking they don''t have any. ', 'Alice Walker' );
 INSERT INTO quotes VALUES ('It is during our darkest moments that we must focus to see the light.', 'Aristotle Onassis' );
-INSERT INTO quotes VALUES ('You can’t use up creativity. The more you use, the more you have.', 'Maya Angelou' );
+INSERT INTO quotes VALUES ('You can''t use up creativity. The more you use, the more you have.', 'Maya Angelou' );
 
 INSERT INTO quotes VALUES ('Love truth, but pardon error.', 'Voltaire' );
 INSERT INTO quotes VALUES ('Certain things catch your eye, but pursue only those that capture the heart.', 'Ancient Indian Proverb' );
-INSERT INTO quotes VALUES ('We can’t help everyone, but everyone can help someone.', 'Ronald Reagan' );
-INSERT INTO quotes VALUES ('Everything you’ve ever wanted is on the other side of fear.', 'George Addair' );
+INSERT INTO quotes VALUES ('We can''t help everyone, but everyone can help someone.', 'Ronald Reagan' );
+INSERT INTO quotes VALUES ('Everything you''ve ever wanted is on the other side of fear.', 'George Addair' );
 INSERT INTO quotes VALUES ('What we achieve inwardly will change outer reality.', 'Plutarch' );
 INSERT INTO quotes VALUES ('I believe in benevolent dictatorship, provided I am the dictator.', 'Richard Branson');
-INSERT INTO quotes VALUES ('I wasn’t satisfied just to earn a good living. I was looking to make a statement.', 'Donald Trump' );
+INSERT INTO quotes VALUES ('I wasn''t satisfied just to earn a good living. I was looking to make a statement.', 'Donald Trump' );
 INSERT INTO quotes VALUES ('Do you want to know who you are? Don''t ask. Act! Action will delineate and define you.', 'Thomas Jefferson' );
 INSERT INTO quotes VALUES ('Old minds are like old horses; you must exercise them if you wish to keep them in working order.', 'John Adams' );
 INSERT INTO quotes VALUES ('It is better to be alone than in bad company.', 'George Washington' );
@@ -354,7 +358,7 @@ INSERT INTO quotes VALUES ('The soul is healed by being with children.', 'Fyodor
 INSERT INTO quotes VALUES ('All the effort in the world won''t matter if you''re not inspired.', 'Chuck Palahniuk' );
 INSERT INTO quotes VALUES ('Our wounds are often the openings into the best and most beautiful part of us.', 'David Richo' );
 
-INSERT INTO quotes VALUES ('The reason I talk to myself is because I’m the only one whose answers I accept.', 'George Carlin');
+INSERT INTO quotes VALUES ('The reason I talk to myself is because I''m the only one whose answers I accept.', 'George Carlin');
 INSERT INTO quotes VALUES ('The truth is rarely pure and never simple.', 'Oscar Wilde' );
 INSERT INTO quotes VALUES ('The truth will set you free, but first it will piss you off.', 'Gloria Steinem' );
 INSERT INTO quotes VALUES ('Rather than love, than money, than fame, give me truth.', 'Henry David Thoreau' );
@@ -412,10 +416,10 @@ INSERT INTO quotes VALUES ('Those who don''t believe in magic will never find it
 
 INSERT INTO quotes VALUES ('The best friend a man has is his dog.', 'George Graham Vest' );
 INSERT INTO quotes VALUES ('The customer is always right.', 'Harry Gordon Selfridge' );
-INSERT INTO quotes VALUES ('Friends don’t let friends drive drunk.', 'public service ad slogan' );
+INSERT INTO quotes VALUES ('Friends don''t let friends drive drunk.', 'public service ad slogan' );
 INSERT INTO quotes VALUES ('Give me liberty or give me death!', 'Patrick Henry' );
 INSERT INTO quotes VALUES ('Seize the day, boys. Make your lives extraordinary.', 'John Keating' );
-INSERT INTO quotes VALUES ('I don’t care what they say as long as they talk about me.', 'Tallulah Bankhead' );
+INSERT INTO quotes VALUES ('I don''t care what they say as long as they talk about me.', 'Tallulah Bankhead' );
 INSERT INTO quotes VALUES ('People are illogical, unreasonable, and self-centered. Love them anyway.', 'Kent M. Keith' );
 INSERT INTO quotes VALUES ('To avoid criticism, say nothing, do nothing, be nothing.', 'Fred Shero' );
 INSERT INTO quotes VALUES ('The most difficult years of marriage are those following the wedding.', 'Bethany Austin' );
@@ -424,10 +428,10 @@ INSERT INTO quotes VALUES ('It''s not whether you get knocked down; it''s whethe
 INSERT INTO quotes VALUES ('Only he who can see the invisible can do the impossible.', 'Frank L. Gaines' );
 INSERT INTO quotes VALUES ('You have to do something in your life that is honorable and not cowardly if you are to live in peace with yourself.', 'Larry Brown' );
 INSERT INTO quotes VALUES ('An athlete cannot run with money in his pockets. He must run with hope in his heart and dreams in his head.', 'Emil Zatopek' );
-INSERT INTO quotes VALUES ('Set your goals high, and don’t stop till you get there.', 'Bo Jackson' );
+INSERT INTO quotes VALUES ('Set your goals high, and don''t stop till you get there.', 'Bo Jackson' );
 INSERT INTO quotes VALUES ('The more difficult the victory, the greater the happiness in winning.', 'Pele' );
 INSERT INTO quotes VALUES ('The will to win is important, but the will to prepare is vital.', 'Joe Paterno' );
-INSERT INTO quotes VALUES ('I hated every minute of training, but I said, Don’t quit. Suffer now and live the rest of your life as a champion.', 'Muhammed Ali' );
+INSERT INTO quotes VALUES ('I hated every minute of training, but I said, Don''t quit. Suffer now and live the rest of your life as a champion.', 'Muhammed Ali' );
 INSERT INTO quotes VALUES ('Get busy living, or get busy dying.', 'Andy Dufresne' );
 INSERT INTO quotes VALUES ('Everybody has a plan until they get punched in the mouth.', 'Mike Tyson');
 
@@ -461,12 +465,12 @@ INSERT INTO quotes VALUES ('A wise man gets more use from his enemies than a foo
 INSERT INTO quotes VALUES ('Everyone is a genius at least once a year. The real geniuses simply have their bright ideas closer together.', 'Georg Christoph Lichtenberg');
 INSERT INTO quotes VALUES ('Believe those who are seeking the truth. Doubt those who find it.', 'Andre Gide');
 INSERT INTO quotes VALUES ('It is the mark of an educated mind to be able to entertain a thought without accepting it.', 'Aristotle');
-INSERT INTO quotes VALUES ('I’d rather live with a good question than a bad answer.', 'Aryeh Frimer');
-INSERT INTO quotes VALUES ('An inventor is simply a fellow who doesn’t take his education too seriously.', 'Charles F. Kettering');
+INSERT INTO quotes VALUES ('I''d rather live with a good question than a bad answer.', 'Aryeh Frimer');
+INSERT INTO quotes VALUES ('An inventor is simply a fellow who doesn''t take his education too seriously.', 'Charles F. Kettering');
 
 INSERT INTO quotes VALUES ('Better to write for yourself and have no public, than to write for the public and have no self.', 'Cyril Connolly');
 INSERT INTO quotes VALUES ('The cure for boredom is curiosity. There is no cure for curiosity.', 'Ellen Parr');
-INSERT INTO quotes VALUES ('Advice is what we ask for when we already know the answer but wish we didn’t.', 'Erica Jong');
+INSERT INTO quotes VALUES ('Advice is what we ask for when we already know the answer but wish we didn''t.', 'Erica Jong');
 INSERT INTO quotes VALUES ('We are shaped and fashioned by what we love.', 'Goethe');
 INSERT INTO quotes VALUES ('Love is being stupid together.', 'Paul Valery');
 INSERT INTO quotes VALUES ('Where there is love there is no question.', 'Albert Einstein');
@@ -477,7 +481,7 @@ INSERT INTO quotes VALUES ('Actors are the only honest hypocrites.', 'William Ha
 
 INSERT INTO quotes VALUES ('The president of today is just the postage stamp of tomorrow.', 'Gracie Allen');
 INSERT INTO quotes VALUES ('The cure for boredom is curiosity. There is no cure for curiosity.', 'Ellen Parr');
-INSERT INTO quotes VALUES ('Advice is what we ask for when we already know the answer but wish we didn’t.', 'Erica Jong');
+INSERT INTO quotes VALUES ('Advice is what we ask for when we already know the answer but wish we didn''t.', 'Erica Jong');
 INSERT INTO quotes VALUES ('We are shaped and fashioned by what we love.', 'Goethe');
 INSERT INTO quotes VALUES ('Love is being stupid together.', 'Paul Valery');
 INSERT INTO quotes VALUES ('Where there is love there is no question.', 'Albert Einstein');
@@ -557,8 +561,8 @@ INSERT INTO quotes VALUES ('I do not judge the universe.', 'Dalai Lama');
 INSERT INTO quotes VALUES ('Happiness is not something ready made. It comes from your own actions.', 'Dalai Lama');
 
 
---proverbs
-INSERT INTO quotes VALUES ('Never attribute to malice that which is adequately explained by stupidity.', 'Hanlon’s Razor');
+--aforismeja
+INSERT INTO quotes VALUES ('Never attribute to malice that which is adequately explained by stupidity.', 'Hanlon''s Razor');
 INSERT INTO quotes VALUES ('The apple doesn''t fall far from the tree.', 'proverb');
 INSERT INTO quotes VALUES ('The pen is mightier than the sword.', 'proverb');
 INSERT INTO quotes VALUES ('Two wrongs don''t make a right.', 'English proverb');
@@ -584,7 +588,7 @@ INSERT INTO quotes VALUES ('What goes up must come down.', 'English proverb');
 INSERT INTO quotes VALUES ('You can''t teach an old dog new tricks.', 'English proverb');
 
 
---natural laws
+--luonnonlakeja
 INSERT INTO quotes VALUES ('Every object in a state of uniform motion tends to remain in that state of motion unless an external force is applied to it.', 'Newton''s I law');
 INSERT INTO quotes VALUES ('The vector sum of the external forces on an object is equal to the product of mass and the acceleration vector of the object.', 'Newton''s II law');
 INSERT INTO quotes VALUES ('For every action there is an equal and opposite reaction.', 'Newton''s III law');
@@ -595,7 +599,7 @@ INSERT INTO quotes VALUES ('The force acting on a submerged object equals the we
 INSERT INTO quotes VALUES ('The total energy of an isolated system remains constant', 'The law of conservation of energy');
 
 
---books
+--kirjoja
 INSERT INTO quotes VALUES ('It was the best of times, it was the worst of times.', 'Charles Dickens, A Tale of Two Cities');
 INSERT INTO quotes VALUES ('Someone must have slandered Josef K., for one morning, without having done anything truly wrong, he was arrested', 'Franz Kafka, The Trial');
 INSERT INTO quotes VALUES ('All of this happened, more or less.', 'Kurt Vonnegut, Slaughterhouse-Five');
@@ -607,11 +611,11 @@ INSERT INTO quotes VALUES ('The schoolmaster was leaving the village, and everyb
 INSERT INTO quotes VALUES ('There was no possibility of taking a walk that day.', 'Charlotte Bronte, Jane Eyre');
 --INSERT INTO quotes VALUES ('He was an old man who fished alone in a skiff in the Gulf Stream and he had gone eighty-four days now without taking a fish.', 'Ernest Hemingway, The Old Man And The Sea');
 
-INSERT INTO quotes VALUES ('It''s funny. Don’t ever tell anybody anything. If you do, you start missing everybody', 'J.D. Salinger, The Cather in the Rye.');
+INSERT INTO quotes VALUES ('It''s funny. Don''t ever tell anybody anything. If you do, you start missing everybody', 'J.D. Salinger, The Cather in the Rye.');
 INSERT INTO quotes VALUES ('We are what we pretend to be, so we must be very careful what we pretend to be', 'Kurt Vonnegut, Mother Night');
 
 
---poems
+--runoja
 INSERT INTO quotes VALUES ('Roses are red, violets are blue. Sugar is sweet, and so are you.', 'Poem' );
 INSERT INTO quotes VALUES ('Twinkle, twinkle, little star, how I wonder what you are! Up above the world so high, like a diamond in the sky.', 'Poem');
 INSERT INTO quotes VALUES ('Now I know my ABCs. Next time won''t you sing with me? ', 'Alphabet Song');
@@ -656,13 +660,13 @@ INSERT INTO quotes VALUES ('Seize the day, boys. Make your lives extraordinary.'
 INSERT INTO quotes VALUES ('I''m the king of the world!', 'Jack Dawson, Titanic');
 
 
---other movies
+--muita elokuvia
 INSERT INTO quotes VALUES ('They may take our lives, but they''ll never take... OUR FREEDOM!', 'William wallace, Braveheart' );
 INSERT INTO quotes VALUES ('Why so serious?', 'The Joker, The Dark Knight' );
 INSERT INTO quotes VALUES ('Get off my plane!', 'President James Marshall, Air Force One' );
 INSERT INTO quotes VALUES ('With great power comes great responsibility.', 'Uncle Ben, Spider Man' );
 INSERT INTO quotes VALUES ('I find your lack of faith disturbing.', 'Darth Vader, Star Wars: Episode IV - A New Hope' );
-INSERT INTO quotes VALUES ('It’s a trap!', 'Admiral Ackbar, Star Wars: Episode VI - Return of the Jedi' );
+INSERT INTO quotes VALUES ('It''s a trap!', 'Admiral Ackbar, Star Wars: Episode VI - Return of the Jedi' );
 INSERT INTO quotes VALUES ('So this is how liberty dies... with thunderous applause.', 'Padme Amidala, Star Wars: Episode III - Revenge of the Sith' );
 INSERT INTO quotes VALUES ('Never tell me the odds.', 'Han Solo, Star Wars: Episode V - The Empire Strikes Back' );
 --INSERT INTO quotes VALUES ('Help me Obi-Wan Kenobi. You''re my only hope', 'Princess Leia' );
@@ -671,7 +675,7 @@ INSERT INTO quotes VALUES ('Germany has declared war on the Jones boys.', 'Walte
 
 
 
---movie taglines
+--taglineja
 INSERT INTO quotes VALUES ('In space no one can hear you scream.', 'Alien tagline' );
 INSERT INTO quotes VALUES ('Earth. It was fun while it lasted.', 'Armageddon tagline' );
 INSERT INTO quotes VALUES ('The true story of a real fake.', 'Catch Me If You Can tagline' );
@@ -693,14 +697,14 @@ INSERT INTO quotes VALUES ('They''re young... they''re in love... and they kill 
 INSERT INTO quotes VALUES ('On every street in every city, there''s a nobody who dreams of being a somebody.', 'Taxi Driver tagline' );
 
 
---games
+--pelejä
 INSERT INTO quotes VALUES ('Thank you Mario! But our princess is in another castle!', 'Toad, Super Mario Bros.' );
 INSERT INTO quotes VALUES ('The right man in the wrong place can make all the difference in the world.', 'G-Man, Half-Life 2' );
 INSERT INTO quotes VALUES ('Why, that''s the second biggest monkey head I''ve ever seen!','Guybrush Threepwood, The Secret of Monkey Island' );
 INSERT INTO quotes VALUES ('Is a man not entitled to the sweat of his brow?', 'Andrew Ryan, Bioshock' );
 INSERT INTO quotes VALUES ('Jill, here''s a lockpick. It might come in handy if you, the master of unlocking, take it with you.', 'Barry Burton, Resident Evil' );
-INSERT INTO quotes VALUES ('It’s dangerous to go alone; take this!', 'Old man, The Legend of Zelda' );
-INSERT INTO quotes VALUES ('It’s super effective!', 'Pokemon' );
+INSERT INTO quotes VALUES ('It''s dangerous to go alone; take this!', 'Old man, The Legend of Zelda' );
+INSERT INTO quotes VALUES ('It''s super effective!', 'Pokemon' );
 INSERT INTO quotes VALUES ('All your base are belong to us.', 'CATS, Zero Wing' );
 INSERT INTO quotes VALUES ('Do a barrel roll!', 'Peppy, Star Fox' );
 INSERT INTO quotes VALUES ('What is better: to be born good, or to overcome your evil nature through great effort?', 'Paarthurnax, Skyrim' );
@@ -712,7 +716,7 @@ INSERT INTO quotes VALUES ('Cousin let''s go bowling.', 'Roman Bellic, Grand The
 INSERT INTO quotes VALUES ('Don''t make a girl a promise... if you know you can''t keep it.', 'Cortana, Halo 2' );
 INSERT INTO quotes VALUES ('In all things a calm heart must prevail.', 'Fawkes, Fallout 3' );
 INSERT INTO quotes VALUES ('Prepare for unforeseen consequences.', 'G-Man, Half-Life 2' );
-INSERT INTO quotes VALUES ('I’m Commander Shepard, and this my favorite store on the citadel!', 'Commander Shepard, Mass Effect 2' );
+INSERT INTO quotes VALUES ('I''m Commander Shepard, and this my favorite store on the citadel!', 'Commander Shepard, Mass Effect 2' );
 INSERT INTO quotes VALUES ('I used to be an adventurer like you, then I took an arrow in the knee.', 'Guard, Skyrim' );
 INSERT INTO quotes VALUES ('Remember - no Russian', 'Vladimir Makarov, COD: Modern Warfare 2' );
 
@@ -730,7 +734,7 @@ INSERT INTO quotes VALUES ('This''ll be a barrel of laughs.', 'Duke Nukem');
 --Indiana Jones
 INSERT INTO quotes VALUES ('Fortune and glory, kid. Fortune and glory.', 'Indiana Jones, Indiana Jones and the Temple of Doom');
 INSERT INTO quotes VALUES ('Throw me the idol; I''ll throw you the whip!', 'Satipo, Raiders of the Lost Ark');
-INSERT INTO quotes VALUES ('Nothing surprises me, I’m a scientist.', 'Indiana Jones, Indiana Jones and the Temple of Doom');
+INSERT INTO quotes VALUES ('Nothing surprises me, I''m a scientist.', 'Indiana Jones, Indiana Jones and the Temple of Doom');
 INSERT INTO quotes VALUES ('That belongs in a museum!', 'Indiana Jones, Indiana Jones and the Last Crusade');
 
 
@@ -837,15 +841,15 @@ INSERT INTO quotes VALUES ('The future is not what it used to be.', 'Yogi Berra'
 
 
 
--- lyrics
--- the satuscode on row 1 determines which row to read the next lyric from
--- song statuscodes: 1 - end of song
---				     2 - current song finished, wait for permission to start the next one
---				     3 - OK to start the next song
+-- lyriikat
+-- ensimmäisen rivin status-sarake kertoo seuraavan luettavan rivin indeksin.
+-- statuskoodit: 1 -- viimeinen rivi
+--				 2 -- edellinen kappale käsitelty loppuun, odota kappaleen vaihtoa
+--				 3 -- Vaihda kappale
 DROP TABLE IF EXISTS lyrics;
 CREATE TABLE lyrics (title TEXT, search TEXT, verse TEXT, status INTEGER);
 
---dictionary creation limits
+--dictionaryn lukuraja
 INSERT INTO lyrics(title) VALUES ('START');
 INSERT INTO lyrics(title) VALUES ('END');
 
