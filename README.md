@@ -37,7 +37,7 @@ Keys:
 When run without any command line arguments the script generates a randomized quote to console window.
 Command line arguments:
 
---rebuild-database [mode]
+--rebuild-database [mode]  
  *  Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
  *  If mode is set to 'quick', the dictionary is not modified.
 
@@ -84,17 +84,17 @@ Command line arguments:
   - A file used to create the database. Updating the database is done by manually updating this file and running the main script with the --rebuild-database switch.
 * quotes.db
   - The databse containing three tables:
-    - quotes: a pair of (quote, author) records
-    - lyrics: a tuple of (title, search, verse, status) records, where
+    1. quotes: a pair of (quote, author) records
+    2. lyrics: a tuple of (title, search, verse, status) records, where
        * title, the title of the song
        * search, a search term given to the --set-song switch. Tells the main script to start this song the next time the --song switch is used. This is usually the same as title.
        * verse, a line or two of the actual lyrics. The purpose is to split the actual verses into small enough pieces to fit into a tweet.
        * status, whereas randomizing a quote is intended to happen by choosing a random quote from the database, song lyrics need to be processed in order. The satus code tells the script whether the last line of the song was encountered (satus code of 1). After the last line is processed the code changes to 2 telling the script to do nothing but wait for permission to move to the next song. Once at least one regular quote is generated the code changes to 3 and the next time the --song switch is used the script will start the next song.
-    - dictionary: a table of words parsed from the other two tables together with a tag identifying each word as a member of a specific word class. Using this tag a suitable word is chosen when randomizing quotes (ie. nouns get replaced by nouns, adjectives by adjectives etc.). The tag is determied by nltk.pos_tag() function.
+    3. dictionary: a table of words parsed from the other two tables together with a tag identifying each word as a member of a specific word class. Using this tag a suitable word is chosen when randomizing quotes (ie. nouns get replaced by nouns, adjectives by adjectives etc.). The tag is determied by nltk.pos_tag() function.
 
 
 #### Changelog
-27.10.2015 Added ability to randomize facts
+27.10.2015 Added ability to randomize facts  
 27.10.2015 Changed the argument parser class from optparse to argparse
 
 31.8.2015 Initial relase
