@@ -2,7 +2,7 @@
 Randomizes an actual quote by switching 1-3 words.
 
 Random Quote Generator                                         
-A Python script that picks a random actual quote from a database, chooses 1-3 words and randomly
+A Python script that picks a random actual quote or a fact from a database, chooses 1-3 words and randomly
 switches them to new ones. Uses a natural language toolkit module to tag    
 words into classes in order to choose a right type of words to be replaced.
 
@@ -37,11 +37,9 @@ Keys:
 When run without any command line arguments the script generates a randomized quote to console window.
 Command line arguments:
 
---rebuild-database
+--rebuild-database [mode]
  *  Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
-
---rebuild-database quick
-  * Rebuilds the database by executing quotes.sql. Does not modify the dictionary.
+ *  If mode is set to 'quick', the dictionary is not modified.
 
 --song
   * Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
@@ -52,11 +50,13 @@ Command line arguments:
 --size
   * Shows the size of the databse.
 
---bot quote
-  * Generates a quote and posts it to Twitter. Requires access tokens and API keys from Twitter.
+--bot <mode>
+  * If mode is set to 'quote', generates either a randomized quote or a fact and posts it to Twitter. If mode is 'song', processes the next song lyric from the current song and posts to Twitter.
+  * Both modes require access tokens and API keys from Twitter.
 
---bot song
-  * Generates a song lyric and posts to Twitter. Requires access tokens and API keys from Twitter.
+--fact
+  * Generate a randomized fact to print it on screen.
+
 
 ##### Maintenance commands
 --init-song
@@ -70,7 +70,6 @@ Command line arguments:
   
 --find-invalid
   * Finds database quotes which do not contain enough valid tags for switching.
-
 
 
 ## File structure
@@ -93,7 +92,13 @@ Command line arguments:
        * status, whereas randomizing a quote is intended to happen by choosing a random quote from the database, song lyrics need to be processed in order. The satus code tells the script whether the last line of the song was encountered (satus code of 1). After the last line is processed the code changes to 2 telling the script to do nothing but wait for permission to move to the next song. Once at least one regular quote is generated the code changes to 3 and the next time the --song switch is used the script will start the next song.
     - dictionary: a table of words parsed from the other two tables together with a tag identifying each word as a member of a specific word class. Using this tag a suitable word is chosen when randomizing quotes (ie. nouns get replaced by nouns, adjectives by adjectives etc.). The tag is determied by nltk.pos_tag() function.
 
-___
-Tested on Python 2.7.8, to make this work on version 3 you will probably need to change the print syntax as well as the raw_input() call on line 531.  
 
-Lauri Ajanki 31.8.2015 
+#### Changelog
+27.10.2015 Added ability to randomize facts
+27.10.2015 Changed the argument parser class from optparse to argparse
+
+31.8.2015 Initial relase
+
+___
+Written on Python 2.7.8
+
