@@ -1,5 +1,5 @@
---luo taulukon lausahduksista
---lähteet: http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
+--creates a database from quotes
+--sources: http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
 --http://www.cs.virginia.edu/~robins/quotes.html
 --http://www.quotery.com/lists/top-500-greatest-quotes-of-all-time/
 --http://www.inc.com/lolly-daskal/100-motivational-quotes-that-will-inspire-you-to-succeed.html
@@ -9,10 +9,9 @@ DROP TABLE IF EXISTS quotes;
 CREATE TABLE quotes (quote TEXT NOT NULL, author TEXT NOT NULL);
 
 
---dictionaryn lukuraja
+--dictionary creation limits
 INSERT INTO quotes VALUES ('START', 'START');
 INSERT INTO quotes VALUES ('END', 'END');
-
 
 
 INSERT INTO quotes VALUES ('Strive not to be a success, but rather to be of value.', 'Albert Einstein');
@@ -451,7 +450,6 @@ INSERT INTO quotes VALUES ('A lie told often enough becomes the truth.', 'Vladim
 INSERT INTO quotes VALUES ('I''m not a dictator. It''s just that I have a grumpy face.', 'Augusto Pinochet');
 INSERT INTO quotes VALUES ('Never interrupt your enemy when he is making a mistake.', 'Napoleon Bonaparte');
 INSERT INTO quotes VALUES ('Conquering the world on horseback is easy; it is dismounting and governing that is hard.', 'Genghis Khan');
-INSERT INTO quotes VALUES ('Conquering the world on horseback is easy; it is dismounting and governing that is hard.', 'Genghis Khan');
 INSERT INTO quotes VALUES ('If we don''t succeed, we run the risk of failure.', 'Dan Quayle');
 INSERT INTO quotes VALUES ('Fiction writing is great, you can make up almost anything.', 'Ivana Trump');
 INSERT INTO quotes VALUES ('Sure there have been injuries and deaths in boxing - but none of them serious.', 'Alan Minter');
@@ -464,9 +462,9 @@ INSERT INTO quotes VALUES ('You can do anything, but not everything.', 'David Al
 INSERT INTO quotes VALUES ('A wise man gets more use from his enemies than a fool from his friends.', 'Baltasar Gracian');
 INSERT INTO quotes VALUES ('Everyone is a genius at least once a year. The real geniuses simply have their bright ideas closer together.', 'Georg Christoph Lichtenberg');
 INSERT INTO quotes VALUES ('Believe those who are seeking the truth. Doubt those who find it.', 'Andre Gide');
-INSERT INTO quotes VALUES ('It is the mark of an educated mind to be able to entertain a thought without accepting it.', 'Aristotle');
 INSERT INTO quotes VALUES ('I''d rather live with a good question than a bad answer.', 'Aryeh Frimer');
 INSERT INTO quotes VALUES ('An inventor is simply a fellow who doesn''t take his education too seriously.', 'Charles F. Kettering');
+INSERT INTO quotes VALUES ('The president of today is just the postage stamp of tomorrow.', 'Gracie Allen');
 
 INSERT INTO quotes VALUES ('Better to write for yourself and have no public, than to write for the public and have no self.', 'Cyril Connolly');
 INSERT INTO quotes VALUES ('The cure for boredom is curiosity. There is no cure for curiosity.', 'Ellen Parr');
@@ -479,18 +477,8 @@ INSERT INTO quotes VALUES ('Death is not the worst that can happen to men.', 'Pl
 INSERT INTO quotes VALUES ('In this world, nothing is certain but death and taxes.', 'Benjamin Franklin');
 INSERT INTO quotes VALUES ('Actors are the only honest hypocrites.', 'William Hazlitt');
 
-INSERT INTO quotes VALUES ('The president of today is just the postage stamp of tomorrow.', 'Gracie Allen');
-INSERT INTO quotes VALUES ('The cure for boredom is curiosity. There is no cure for curiosity.', 'Ellen Parr');
-INSERT INTO quotes VALUES ('Advice is what we ask for when we already know the answer but wish we didn''t.', 'Erica Jong');
-INSERT INTO quotes VALUES ('We are shaped and fashioned by what we love.', 'Goethe');
-INSERT INTO quotes VALUES ('Love is being stupid together.', 'Paul Valery');
-INSERT INTO quotes VALUES ('Where there is love there is no question.', 'Albert Einstein');
-INSERT INTO quotes VALUES ('It is impossible to love and be wise.', 'Francis Bacon');
-INSERT INTO quotes VALUES ('Death is not the worst that can happen to men.', 'Plato');
-INSERT INTO quotes VALUES ('In this world, nothing is certain but death and taxes.', 'Benjamin Franklin');
-INSERT INTO quotes VALUES ('Actors are the only honest hypocrites.', 'William Hazlitt');
-
 INSERT INTO quotes VALUES ('Of those who say nothing, few are silent.', 'Thomas Neil');
+INSERT INTO quotes VALUES ('I came, I saw, I conquered.', 'Julius Caesar');
 
 
 --Buddha
@@ -561,7 +549,7 @@ INSERT INTO quotes VALUES ('I do not judge the universe.', 'Dalai Lama');
 INSERT INTO quotes VALUES ('Happiness is not something ready made. It comes from your own actions.', 'Dalai Lama');
 
 
---aforismeja
+--aphorisms
 INSERT INTO quotes VALUES ('Never attribute to malice that which is adequately explained by stupidity.', 'Hanlon''s Razor');
 INSERT INTO quotes VALUES ('The apple doesn''t fall far from the tree.', 'proverb');
 INSERT INTO quotes VALUES ('The pen is mightier than the sword.', 'proverb');
@@ -588,7 +576,7 @@ INSERT INTO quotes VALUES ('What goes up must come down.', 'English proverb');
 INSERT INTO quotes VALUES ('You can''t teach an old dog new tricks.', 'English proverb');
 
 
---luonnonlakeja
+--laws of nature
 INSERT INTO quotes VALUES ('Every object in a state of uniform motion tends to remain in that state of motion unless an external force is applied to it.', 'Newton''s I law');
 INSERT INTO quotes VALUES ('The vector sum of the external forces on an object is equal to the product of mass and the acceleration vector of the object.', 'Newton''s II law');
 INSERT INTO quotes VALUES ('For every action there is an equal and opposite reaction.', 'Newton''s III law');
@@ -596,10 +584,11 @@ INSERT INTO quotes VALUES ('Planets orbit the sun elliptically.', 'Kepler''s I l
 INSERT INTO quotes VALUES ('A line segment joining a planet and the Sun sweeps out equal areas during equal intervals of time.', 'Kepler''s II law');
 INSERT INTO quotes VALUES ('The square of the orbital period of a planet is proportional to the cube of the axis of its orbit.', 'Kepler''s III law');
 INSERT INTO quotes VALUES ('The force acting on a submerged object equals the weight of the displaced liquid.', 'Archimedes'' Buoyancy principle');
-INSERT INTO quotes VALUES ('The total energy of an isolated system remains constant', 'The law of conservation of energy');
+INSERT INTO quotes VALUES ('The total energy of an isolated system remains constant.', 'The law of conservation of energy');
+INSERT INTO quotes VALUES ('whatever can go wrong, will go wrong.', 'Murphy''s Law');
 
 
---kirjoja
+--books
 INSERT INTO quotes VALUES ('It was the best of times, it was the worst of times.', 'Charles Dickens, A Tale of Two Cities');
 INSERT INTO quotes VALUES ('Someone must have slandered Josef K., for one morning, without having done anything truly wrong, he was arrested', 'Franz Kafka, The Trial');
 INSERT INTO quotes VALUES ('All of this happened, more or less.', 'Kurt Vonnegut, Slaughterhouse-Five');
@@ -615,7 +604,7 @@ INSERT INTO quotes VALUES ('It''s funny. Don''t ever tell anybody anything. If y
 INSERT INTO quotes VALUES ('We are what we pretend to be, so we must be very careful what we pretend to be', 'Kurt Vonnegut, Mother Night');
 
 
---runoja
+--poems
 INSERT INTO quotes VALUES ('Roses are red, violets are blue. Sugar is sweet, and so are you.', 'Poem' );
 INSERT INTO quotes VALUES ('Twinkle, twinkle, little star, how I wonder what you are! Up above the world so high, like a diamond in the sky.', 'Poem');
 INSERT INTO quotes VALUES ('Now I know my ABCs. Next time won''t you sing with me? ', 'Alphabet Song');
@@ -656,11 +645,10 @@ INSERT INTO quotes VALUES ('Open the pod bay doors please, HAL.', 'Dave Bowman, 
 INSERT INTO quotes VALUES ('My precious.', 'Gollum, The Lord of the Rings: The Two Towers');
 INSERT INTO quotes VALUES ('A martini. Shaken, not stirred.', 'James Bond, Goldfinger');
 INSERT INTO quotes VALUES ('I feel the need — the need for speed!', 'Lt. Pete Mitchell & Lt. Nick Bradshaw, Top Gun' );
-INSERT INTO quotes VALUES ('Seize the day, boys. Make your lives extraordinary.', 'John Keating, Dead Poets Society');
 INSERT INTO quotes VALUES ('I''m the king of the world!', 'Jack Dawson, Titanic');
 
 
---muita elokuvia
+--movies
 INSERT INTO quotes VALUES ('They may take our lives, but they''ll never take... OUR FREEDOM!', 'William wallace, Braveheart' );
 INSERT INTO quotes VALUES ('Why so serious?', 'The Joker, The Dark Knight' );
 INSERT INTO quotes VALUES ('Get off my plane!', 'President James Marshall, Air Force One' );
@@ -674,8 +662,7 @@ INSERT INTO quotes VALUES ('Never tell me the odds.', 'Han Solo, Star Wars: Epis
 INSERT INTO quotes VALUES ('Germany has declared war on the Jones boys.', 'Walter Donovan, Indiana Jones and the Last Crusade' );
 
 
-
---taglineja
+--movie taglines
 INSERT INTO quotes VALUES ('In space no one can hear you scream.', 'Alien tagline' );
 INSERT INTO quotes VALUES ('Earth. It was fun while it lasted.', 'Armageddon tagline' );
 INSERT INTO quotes VALUES ('The true story of a real fake.', 'Catch Me If You Can tagline' );
@@ -697,7 +684,7 @@ INSERT INTO quotes VALUES ('They''re young... they''re in love... and they kill 
 INSERT INTO quotes VALUES ('On every street in every city, there''s a nobody who dreams of being a somebody.', 'Taxi Driver tagline' );
 
 
---pelejä
+--games
 INSERT INTO quotes VALUES ('Thank you Mario! But our princess is in another castle!', 'Toad, Super Mario Bros.' );
 INSERT INTO quotes VALUES ('The right man in the wrong place can make all the difference in the world.', 'G-Man, Half-Life 2' );
 INSERT INTO quotes VALUES ('Why, that''s the second biggest monkey head I''ve ever seen!','Guybrush Threepwood, The Secret of Monkey Island' );
@@ -714,7 +701,6 @@ INSERT INTO quotes VALUES ('Wake me when you need me.', 'Master Chief, Halo 3' )
 INSERT INTO quotes VALUES ('In all things a calm heart must prevail.', 'Fawkes, Fallout 3' );
 INSERT INTO quotes VALUES ('Cousin let''s go bowling.', 'Roman Bellic, Grand Theft Auto IV' );
 INSERT INTO quotes VALUES ('Don''t make a girl a promise... if you know you can''t keep it.', 'Cortana, Halo 2' );
-INSERT INTO quotes VALUES ('In all things a calm heart must prevail.', 'Fawkes, Fallout 3' );
 INSERT INTO quotes VALUES ('Prepare for unforeseen consequences.', 'G-Man, Half-Life 2' );
 INSERT INTO quotes VALUES ('I''m Commander Shepard, and this my favorite store on the citadel!', 'Commander Shepard, Mass Effect 2' );
 INSERT INTO quotes VALUES ('I used to be an adventurer like you, then I took an arrow in the knee.', 'Guard, Skyrim' );
@@ -836,20 +822,43 @@ INSERT INTO quotes VALUES ('The day of small nations has long passed away. The d
 INSERT INTO quotes VALUES ('The future is not what it used to be.', 'Yogi Berra');
 
 
+--facts
+--http://www.thefactsite.com/2011/07/top-100-random-funny-facts.html
+INSERT INTO quotes VALUES ('Banging your head against a wall burns 150 calories an hour.', 'fact');
+INSERT INTO quotes VALUES ('In the UK, it is illegal to eat mince pies on Christmas Day!', 'fact');
+INSERT INTO quotes VALUES ('When hippos are upset, their sweat turns red.', 'fact');
+INSERT INTO quotes VALUES ('A flock of crows is known as a murder.', 'fact');
+INSERT INTO quotes VALUES ('During your lifetime, you will produce enough saliva to fill two swimming pools.', 'fact');
+INSERT INTO quotes VALUES ('An eagle can kill a young deer and fly away with it.', 'fact');
+INSERT INTO quotes VALUES ('Bikinis and tampons invented by men.', 'fact');
+INSERT INTO quotes VALUES ('A toaster uses almost half as much energy as a full-sized oven.', 'fact');
+INSERT INTO quotes VALUES ('You cannot snore and dream at the same time.', 'fact');
+INSERT INTO quotes VALUES ('A baby octopus is about the size of a flea when it is born.', 'fact');
+
+INSERT INTO quotes VALUES ('Nearly three percent of the ice in Antarctic glaciers is penguin urine.', 'fact');
+INSERT INTO quotes VALUES ('A small child could swim through the veins of a blue whale.', 'fact');
+INSERT INTO quotes VALUES ('The total number of steps in the Eiffel Tower are 1665.', 'fact');
+INSERT INTO quotes VALUES ('Pirates wore earrings because they believed it improved their eyesight.', 'fact');
+INSERT INTO quotes VALUES ('The testicles on an octopus are located in its head!', 'fact');
+INSERT INTO quotes VALUES ('Birds don''t urinate.', 'fact');
+INSERT INTO quotes VALUES ('An apple, potato, and onion all taste the same if you eat them with your nose plugged.', 'fact');
+INSERT INTO quotes VALUES ('The average person walks the equivalent of twice around the world in a lifetime.', 'fact');
+INSERT INTO quotes VALUES ('The inventor of the Waffle Iron did not like waffles.', 'fact');
+INSERT INTO quotes VALUES ('Hares are born with fur and can see whilst rabbits are born naked and blind.', 'fact');
 
 
 
 
 
--- lyriikat
--- ensimmäisen rivin status-sarake kertoo seuraavan luettavan rivin indeksin.
--- statuskoodit: 1 -- viimeinen rivi
---				 2 -- edellinen kappale käsitelty loppuun, odota kappaleen vaihtoa
---				 3 -- Vaihda kappale
+-- lyrics
+-- the status code from the first row indicates the row to read the next lyric
+-- status codes: 1 -- final piece of lyric from the current song
+--				 2 -- previous song finished, wait for permission to start the next song
+--				 3 -- OK to start the next song
 DROP TABLE IF EXISTS lyrics;
 CREATE TABLE lyrics (title TEXT, search TEXT, verse TEXT, status INTEGER);
 
---dictionaryn lukuraja
+--dictionary creation limits
 INSERT INTO lyrics(title) VALUES ('START');
 INSERT INTO lyrics(title) VALUES ('END');
 

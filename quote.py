@@ -4,9 +4,10 @@
 
 ###############################################################################
 # quote.py - A Random Quote Generator                                         #
-# Picks a random actual quote from a database, chooses 1-3 words and randomly #
-# switches them to new ones. Uses a natural language toolkit module to tag    #
-# words into classes in order to choose a right type of words to be replaced. #
+# Picks a random actual quote or a fact from a database, chooses 1-3 words	  #
+# and randomly switches them to new ones. Uses a natural language toolkit	  #
+# module to tag words into classes in order to choose a right type of words   #
+# to be replaced. 															  #
 #                                                                             #
 # Can also be used to work with song lyrics: the script reads lyrics line     #
 # by line, randomizes them and outputs the result.                            #
@@ -29,12 +30,12 @@
 #  * The Twitter bot feature requires access tokens and keys from Twitter     #
 #      https://dev.twitter.com/oauth/overview/application-owner-access-tokens #        
 #                                                                             #
-# Lauri Ajanki 31.8.2015                                                      #
+# Lauri Ajanki 27.10.2015                                                     #
 ###############################################################################
 
 import sqlite3 as lite
 import sys
-import getopt
+import argparse
 import twython
 import json
 import os.path
@@ -350,7 +351,6 @@ def get_lyric():
 
 			return (title, lyric)
 
-		# ei statusta: kappale kesken, päivitä ensimmäisen rivin itedot ja palauta nykyinen rivi
 		# no satus code - the current song is not done. Fetch the next row and update the
 		# first row.
 		else:
@@ -373,6 +373,19 @@ def randomize_lyric():
 		print "Current song finished"
 		sys.exit()
 
+
+# Randomizes a fact and prints it on screen.
+def get_fact():
+	con = lite.connect("./quotes.db")
+	cur = con.cursor()
+
+	with con:
+		cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
+		fact = cur.fetchone()
+
+		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
+
+		randomize(fact)  # print from inside the function
 
 
 #*******************
@@ -464,180 +477,144 @@ def find_invalid():
 		print "No invalid quotes"
 
 
-# Testfunction for normalization.
-# Not in use, run to see the differences between nltk.word_tokenize() and normalize_tokens()
-def test_normalize():
-	tokens = word_tokenize("Not Penny's boat. they're lying!")
-	tokens2 = word_tokenize("It's everything you've ever wanted, kid.")
-	tokens3 = word_tokenize("Don't kid yourself, It can't be done!")
-	print "original tokens:"
-	print tokens
-	print tokens2
-	print tokens3
-	print
-
-	print "normalized tokens:"
-	norm1 = normalize_tokens(tokens)
-	norm2 = normalize_tokens(tokens2)
-	norm3 = normalize_tokens(tokens3)
-	print norm1
-	print norm2
-	print norm3
-	print
-
-	print "normalized sentences:"
-	normalize_sentence(norm1)
-	normalize_sentence(norm2)
-	normalize_sentence(norm3)
-	print norm1
-
-
-# Shows info on command line parameters
-def usage():
-	print "Usage:\n\
-Run with 'python quote.py' to generate a randomized quote.\n\
-Optional parameters:\n\
-  --rebuild-database \n\
-\tRebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by \"START\" and \"END\" for the dictionary. You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch (ie. when adding new quotes to the database).\n\
-  --rebuild-database quick \n\
-\tRebuilds the database by executing quotes.sql, but does not modify the dictionary.\n\
-  --song \n\
-\tGenerates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.\n\
-  --tags \n\
-\tShows info on all tags used to categorize words into classes.\n\
-  --size \n\
-\tShows the size of the databse. \n\
-  --bot quote\n\
-\tGenerates a quote and posts it to Twitter. Requires access tokens and API keys from Twitter.\n\
-  --bot song \n\
-\tGenerates a song lyric and posts to Twitter. Requires access tokens and API keys from Twitter.\n\
-\
-Maintenance commands: \n\
-  --init-song \n\
-\tChanges the status codes for the lyrics table back to initial values. \n\
-  --set-song <name> \n\
-\tSets the given song to be the next one read by the --song -switch. See the search column of the lyrics table for valid names.\n\
-  --find-duplicates \n\
-\tPrints the first instance of quotes having a duplicate in the database."
-
 
 #********
 # Main  *
 #********
 
 def main():
-	# Prompt for initialization if the database does not exist.
+	parser = argparse.ArgumentParser(description="A quote randomizer.")
+	parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
+	parser.add_argument("--tags", help="Shows info on all tags used to categorize words into classes.", action="store_true")
+	parser.add_argument("--rebuild-database", nargs="?", metavar="mode", const="full", help="Rebuilds the entire database by executing quotes.sql. If no mode is supplied all previous data from quotes and lyrics is dropped and the sections marked by \"START\" and \"END\" is parsed for the dictionary. You may want to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch (ie. when adding new quotes to the database). Alternatively, if mode is set to 'quick' the dictionary is not modified at all.")
+	parser.add_argument("--song", help="Generates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.", action="store_true")
+	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
+	parser.add_argument("--set-song", metavar="song", help="Sets the given song to be the next one read by the '--song' switch. See the search column of the lyrics table for valid names.")
+	parser.add_argument("--find-duplicates", help="Prints the first instance of quotes having a duplicate in the database.", action="store_true")
+	parser.add_argument("--find-invalid", help="Find all quotes that do not contain proper words to change.", action="store_true")
+	parser.add_argument("--bot", metavar="mode", help="Generates a quote/fact or a song lyric and posts it to Twitter. Mode can be either 'quote' or 'song'. Requires access tokens and API keys from Twitter.")
+	parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
+
+	args = parser.parse_args()
+
+	# no database detected -> create it and show usage information
 	if not os.path.isfile("quotes.db"):
 		ans = raw_input("The database quotes.db doesn't exist. Create a new one? (y/N)\n")
 		if ans == "y":
 			create_db()
-		usage()
+		print "usage:"
+		parser.print_help()
 		sys.exit()
 
-	try:
-		opts, args = getopt.getopt(sys.argv[1:],"", ["size", "tags", "rebuild-database", "song", "init-song", "set-song=", "find-duplicates", "find-invalid", "bot="])
-	except getopt.GetoptError as err:
-		print str(err)
-		usage()
-		sys.exit()
 
-	# Parse through the given command line parameters:
-	# No argument - generate a random quote.
-	if not opts:
-		new = get_quote()
-		randomize(new)
+	con = lite.connect("./quotes.db")
+	cur = con.cursor()
+
+	if args.size:
+		database_size()
+	elif args.tags:
+		show_tags()
+
+	# rebuild database. If no optional parameter was provided, also recreate the dictionary.
+	elif args.rebuild_database:
+		quick = False
+		mode = args.rebuild_database	# check for optional parameter, if none default to 'full'
+
+		if mode not in ["full", "quick"]:
+			print "Error: invalid mode, please use either 'full' (default) or 'quick'."
+			sys.exit()
+
+		if mode == "quick":
+			quick = True
+		update_db(quick)
+
+	elif args.song:
+		randomize_lyric()
+
+	# change the status codes of the lyrics table back to initial values
+	elif args.init_song:
+		with con:
+			# set all end-of-song codes back to 1
+			cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
+			# set the row index back to the first row of the first song
+			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, 1))
+		print "Done"
+
+	# attempt to set the provided song to be the next one read from the database
+	elif args.set_song:
+		arg = args.set_song
+		with con:
+			cur.execute("SELECT rowid FROM lyrics WHERE search = ?", (arg,))
+			row = cur.fetchone()
+
+			if row == None:
+				print "Invalid song"
+				sys.exit(1)
+			else:
+				cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
+				cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
+
+	elif args.find_duplicates:
+		with con:
+			query = "SELECT rowid, quote FROM quotes GROUP BY quote HAVING COUNT(*) > 1"
+			for dupe in cur.execute(query):
+				print dupe[0], dupe[1]
+
+	elif args.find_invalid:
+		print "Checking database structure, please wait."
+		find_invalid()
+
+	# tweet
+	elif args.bot:
+		msg = ""
+		mode = args.bot
+		# check if mode was valid
+		if mode not in ["quote", "song"]:
+			print "Error: invalid mode, please use either 'quote' or 'song'."
+			sys.exit()
+
+		if mode == "quote":
+			quote = get_quote()
+			randomized_quote = randomize(quote)
+
+			# format the message to tweet based on whether the database item was a quote or a fact
+			if randomized_quote[1] == "fact":
+				msg = "Random non-fact:\n"+randomized_lyric[0]
+			else:
+				msg = randomized_quote[0]+"\n"+"--"+randomized_quote[1]
+
+		else: 	# mode == "song"
+			randomized_lyric = randomize_lyric()
+			title = randomized_lyric[0]
+			lyric = randomized_lyric[1]
+			if title != None:
+				msg = randomized_lyric[0]+'\n'+randomized_lyric[1]
+			else:
+				msg = randomized_lyric[1]
+
+
+		with open("./keys.json") as f:
+			data = json.load(f)
+			API_KEY = data["API_KEY"]
+			API_SECRET = data["API_SECRET"]
+			OAUTH_TOKEN = data["OAUTH_TOKEN"]
+			OAUTH_SECRET = data["OAUTH_SECRET"]
+
+		twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
+		twitter.update_status(status=msg)
+
+	elif args.fact:
+		get_fact()
+
+	# no argument provided -> print a randomized quote or a fact on screen
 	else:
-		con = lite.connect("./quotes.db")
-		cur = con.cursor()
-		for opt, arg in opts:
-			if opt == "--size":
-				database_size()
-			elif opt == "--tags":
-				show_tags()
-			
-			# Rebuilds the database by executing quotes.sql.
-			elif opt == "--rebuild-database":
-				quick = False
-				# --rebuild-database quick: also parse quotes.sql for the dictionary
-				if "quick" in args:
-					quick = True
-				update_db(quick)
+		new = get_quote()
+		randomize(new)		# printing from inside the function
 
-			# Generate the next lyric.
-			elif opt == "--song":
-				randomize_lyric()
-
-			# Change the status codes of lyrics table back to initial values, ie. the next
-			# use of --song results in the first line of the first song in the database
-			# being processed.
-			elif opt == "--init-song":
-				with con:
-					# change the end-of-song codes back to 1
-					cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
-					# change the rowid-to-read-next index back to 2
-					cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, 1))
-				print "Done"
-
-			# Makes the given song to be the next one processed.
-			# Requires an argument.
-			elif opt == "--set-song":
-				with con:
-					cur.execute("SELECT rowid FROM lyrics WHERE search = ?", (arg,))
-					row = cur.fetchone()
-
-					if row == None:
-						print "Invalid song"
-						sys.exit(1)
-					else:
-						cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
-						cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
-
-			# Maintenance command: find quotes with duplicates in the database.
-			elif opt == "--find-duplicates":
-				with con:
-					query = """SELECT rowid, quote
-							   FROM quotes
-							   GROUP BY quote
-							   HAVING COUNT(*) > 1"""
-					for dupe in cur.execute(query):
-						print dupe[0], dupe[1]
-
-			elif opt == "--find-invalid":
-				find_invalid()
-
-			# Randomize a quote or a song and post the result to Twitter using twython.
-			# Requires Twitter access tokens and keys.
-			elif opt == "--bot":
-				msg = ""
-				if arg == "quote":
-					quote = get_quote()
-					randomized_quote = randomize(quote)
-					msg = randomized_quote[0]+"\n"+"--"+randomized_quote[1]
-				elif arg == "song":
-					randomized_lyric = randomize_lyric()
-					title = randomized_lyric[0]
-					lyric = randomized_lyric[1]
-					if title != None:
-						msg = randomized_lyric[0]+'\n'+randomized_lyric[1]
-					else:
-						msg = randomized_lyric[1]
-
-				if msg:
-					# NOTE: keys.json in empty. Fill it with your own keys.
-					with open("./keys.json") as f:
-						data = json.load(f)
-						API_KEY = data["API_KEY"]
-						API_SECRET = data["API_SECRET"]
-						OAUTH_TOKEN = data["OAUTH_TOKEN"]
-						OAUTH_SECRET = data["OAUTH_SECRET"]
-
-					twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
-					twitter.update_status(status=msg)
 		
 
 
 if __name__ == "__main__":
 	main()
-	#test_normalize()
 	
 
