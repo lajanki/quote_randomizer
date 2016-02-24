@@ -98,10 +98,13 @@ Command line arguments:
 * added a dedicated function for parsing strings for valid words to add to the dictionary. Words with apostrophes and one letter words are not considered valid.
 * changed find_invalid() function to reflect the above: it now also finds and deletes all one letter words and optionally deletes words with apostrophes.
 * switch() now matches capitalization of the inserted word to the old word.
+
 27.10.2015
 * added ability to randomize facts
+
 27.10.2015
 * changed the argument parser class from optparse to argparse
+
 31.8.2015
 * initial relase
 
