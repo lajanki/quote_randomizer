@@ -74,7 +74,7 @@ Command line arguments:
 
 ## File structure
 
-* quote.py
+* quotes.py
   - The main script.
 * keys.json
   - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required for the tweeting component, ie. when running with '--bot quote' or '--bot song'.
