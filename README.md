@@ -1,9 +1,9 @@
 # quote_randomizer
 Randomizes an actual quote by switching 1-3 words.
 
-Random Quote Generator                                         
+Random Quote Generator
 A Python script that picks a random actual quote or a fact from a database, chooses 1-3 words and randomly
-switches them to new ones. Uses a natural language toolkit module to tag    
+switches them to new ones. Uses a natural language toolkit module to tag
 words into classes in order to choose a right type of words to be replaced.
 
 Can also be used to work with song lyrics: the script reads lyrics line
@@ -29,7 +29,7 @@ Additionally the Tweeting feature requires:
      https://twython.readthedocs.org/en/latest/
 
 Keys:
- * You will need to register a Twitter app to get your own Twitter access tokens and developer keys, see https://dev.twitter.com/oauth/overview/application-owner-access-tokens Store these keys to the keys.json file.   
+ * You will need to register a Twitter app to get your own Twitter access tokens and developer keys, see https://dev.twitter.com/oauth/overview/application-owner-access-tokens Store these keys to the keys.json file.
 
 
 ## Usage
@@ -37,8 +37,8 @@ Keys:
 When run without any command line arguments the script generates a randomized quote to console window.
 Command line arguments:
 
---rebuild-database [mode]  
- *  Rebuilds the entire database by executing quotes.sql. Drops previous data from quotes and lyrics and parses the sections marked by 'START' and 'END' for the dictionary (see quotes.sql). You need to manually edit this section to keep this script from dropping and re-inserting the same words to the dictionary everytime you use this switch ie. when adding new quotes to the database.
+--rebuild-database [mode]
+ *  Rebuilds the entire database by executing quotes.sql. Drops all previous data from quotes and lyrics but does not modify the dictionary. If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary. If mode is set to 'quick' the dictionary is not modified.
  *  If mode is set to 'quick', the dictionary is not modified.
 
 --song
@@ -78,8 +78,6 @@ Command line arguments:
   - The main script.
 * keys.json
   - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required for the tweeting component, ie. when running with '--bot quote' or '--bot song'.
-* quote.sh
-  - A Linux script to run quote.py. Automatically runs it again if the first try doesn't provide a valid quote.
 * quotes.sql
   - A file used to create the database. Updating the database is done by manually updating this file and running the main script with the --rebuild-database switch.
 * quotes.db
@@ -94,10 +92,18 @@ Command line arguments:
 
 
 #### Changelog
-27.10.2015 Added ability to randomize facts  
-27.10.2015 Changed the argument parser class from optparse to argparse
-
-31.8.2015 Initial relase
+24.2.2016
+* removed the cumbersom START, END marking of quotes.sql. Instead all of quotes and lyrics are now parsed for the dictionary.
+* cleaned up database creation down to a single function.
+* added a dedicated function for parsing strings for valid words to add to the dictionary. Words with apostrophes and one letter words are not considered valid.
+* changed find_invalid() function to reflect the above: it now also finds and deletes all one letter words and optionally deletes words with apostrophes.
+* switch() now matches capitalization of the inserted word to the old word.
+27.10.2015
+* added ability to randomize facts
+27.10.2015
+* changed the argument parser class from optparse to argparse
+31.8.2015
+* initial relase
 
 ___
 Written on Python 2.7.8
