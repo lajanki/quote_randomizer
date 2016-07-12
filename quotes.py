@@ -13,10 +13,10 @@
 #                                                                             #
 # Uses a database (quotes.db) to store and read quotes. The database consists #
 # of 3 tables:                                                                #
-#   *quotes: pairs of quotes and authors taken from real people, movies and   #
+#   * quotes: pairs of quotes and authors taken from real people, movies and  #
 #     games                                                                   #
-#   *lyrics: full lyrics to songs                                             #
-#   *dictionary: a table of words parsed from the other tables.               #
+#   * lyrics: full lyrics to songs                                            #
+#   * dictionary: a table of words parsed from the other tables.              #
 #                                                                             #
 #                                                                             #
 # Requires:                                                                   #
@@ -31,9 +31,17 @@
 #                                                                             #					
 #																			  #
 # Change log:																  #
+# 11.7.2016 																  #
+#	* refactoring: moved general database query functions update_db(),        #
+#	  parse_for_dictionary() and database_size() to their own module for      #
+#	  easier access to other scripts utilizing the database.                  #
+# 29.3.2016 																  #
+#	* changed parse_for_dictionary() to guard against all invalid dictionary  #
+#	  entries, the --find-invalid switch is now depricated 					  #
 # 23.2.2016																	  #
 #	* removed the cumbersom START, END marking of quotes.sql. Running		  #
 #	  update_db() now drops and re-inserts all previous data.				  #
+#	  This is slower, but this function is rarely used. 					  #
 #	* cleaned up database creation to one function				 			  #
 #	* added parse_for_dictionary() as a dedicated function for parsing		  #
 #	  strings for valid words to add to the dictionary.   					  #
@@ -47,6 +55,7 @@
 #	* initial version 												  		  #
 ###############################################################################
 
+
 import sqlite3 as lite
 import sys
 import getopt
@@ -57,91 +66,24 @@ import argparse
 import nltk
 import random
 
-# Define applicable nltk tags for identifying valid words for switching.
+import dbaccess
+
+
+path = "/home/pi/python/quotes/"
+
+# Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
 CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
-
 
 #==============================================================================
 # Database functions #
 #====================#
-
-
-def update_db(quick=False):
-	"""Execute the contents of quotes.sql to update the database.
-	This function drops and refills the quotes and lyrics tables.
-	See quotes.sql for DROP TABLE commands.
-	This does not touch the dictionary table.
-	Arg:
-		quick (boolean): whether to parse quotes and lyrics for dictionary
-	"""
-	con = lite.connect("quotes.db")
-	cur = con.cursor()
-
-	with con:
-		print "Executing quotes.sql, please wait..."
-		with open("quotes.sql") as f:
-			lines = [line.rstrip("\n;").lstrip("\t") for line in f]
-			for sql in lines:
-				cur.execute(sql)
-		print "Done"
-
-	# check whether to parse quotes and lyrics for dictionary
-	if not quick:
-		print "Updating dictionary..."
-		cur.execute("SELECT quote FROM quotes")
-		rows = cur.fetchall()
-		for row in rows:
-			parse_for_dictionary(row[0])
-
-	# finally, show info on database size
-	database_size()
-	print "Run 'python quote.py --tags' to see description of all tags"
-
-
-def parse_for_dictionary(s, verbose=False):
-	"""Parse given string for database dictionary.
-	Exclude punctuation and words containing apostrophes (',`,´,’).
-	Args:
-		s (string): the string to parse
-		verbose (boolean): whether to show which words were rejected as punctuation
-	Return:
-		list of words of s rejected from inserting into the dictionary
-	"""
-	con = lite.connect("quotes.db")
-	cur = con.cursor()
-
-	# replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's] 
-	s = s.replace("'", "`")
-	tokens = nltk.word_tokenize(s)
-	punctuation = ["-", "%", "`", u"´", u"’"]
-	# find tokens not having punctuation
-	valid = [token for token in tokens if (not any([p in token for p in punctuation]) and len(token) > 1)]
-	tagged = nltk.pos_tag([word.lower() for word in valid])
-
-	rejected = [word for word in tokens if word not in valid]
-	if verbose:
-		print "Words rejected:"
-		print rejected
-
-	# store in database
-	with con:
-		for word, tag in tagged:
-			if tag in CLASSES:
-				cur.execute("SELECT * FROM dictionary WHERE word = ? AND class = ?", (word, tag))
-				row = cur.fetchone()
-				if row is None:		# word, tag pair is not yet in dictionary -> add it
-					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
-
-	return rejected
-
-
 def get_quote():
 	"""Fetch a random quote from the database.
 	Return:
 		(quote, author) tuple
 	"""
-	con = lite.connect("quotes.db")
+	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
 	with con:
@@ -160,7 +102,7 @@ def get_lyric():
 	Return:
 		(title, lyric) tuple of the next lyric to be processed, possible None
 	"""
-	con = lite.connect("quotes.db")
+	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
 	with con:
@@ -219,14 +161,14 @@ def get_lyric():
 
 def get_fact():
 	"""Randomize a fact and print it on screen."""
-	con = lite.connect("quotes.db")
+	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
 	with con:
 		cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
 		fact = cur.fetchone()
 		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
-		randomized = randomize(fact)  # print from inside this function
+		randomized = randomize(fact)
 		
 
 #==============================================================================
@@ -244,7 +186,7 @@ def switch(string):
 	Return:
 		a dict of the randomized string, words replaced and words inserted
 	"""
-	con = lite.connect("quotes.db")
+	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
 	# tokenize, reattach apostrophes and pos tag tokens
@@ -349,10 +291,12 @@ def switch(string):
 		if token in punctuation_marks:
 			tokens[idx-1] += token
 
-	# filter out the now lone punctuation mark and sticht the remaining
-	# tokens back to a string
+	# filter out the now lone punctuation mark
 	tokens = [token for token in tokens if token not in punctuation_marks]
+
+	# capitalize the final sentence and stich it back to a string from a list
 	encoded = [(word.encode("utf-8")) for word in tokens]
+
 	s = " ".join(encoded)
 
 	return {"randomized": s, "new": new, "old": old}
@@ -377,7 +321,7 @@ def randomize(quote_record):
 
 
 def randomize_lyric():
-	"""# Fetch a lyric and use switch() to randomize it."""
+	"""Fetch a lyric and use switch() to randomize it."""
 	lyric_record = get_lyric()
 	title = lyric_record[0]
 	lyric = lyric_record[1]
@@ -394,28 +338,6 @@ def randomize_lyric():
 #==============================================================================
 # Helper functions #
 #==================#
-
-def database_size():
-	"""Print information on the size of the database.
-	Used with --size switch"""
-	con = lite.connect("quotes.db")
-	cur = con.cursor()
-
-	with con:
-		cur.execute("SELECT COUNT(quote) FROM quotes")
-		size = cur.fetchone()
-		print size[0], "quotes"
-
-		cur.execute("SELECT COUNT(*) FROM dictionary")
-		size = cur.fetchone()
-		print size[0], "words"
-
-		for item in CLASSES:
-			cur.execute("SELECT COUNT(word) FROM dictionary WHERE class = ?", (item,))
-			size = cur.fetchone()
-			print item, size[0]
-
-
 def normalize_tokens(tokens):
 	"""nltk.word_tokenize() will tokenize words using ' as an apostrophe into
 	two tokens: eg. "can't" -> ["can", "'t"].
@@ -423,11 +345,11 @@ def normalize_tokens(tokens):
 	the dictionary, quotes.sql still uses ' as an apostrophe and its contents
 	need to inserted into the database.
 	This function normalizes tokens by reattaching the parts back together.
+	switch() uses this to normalize a tokenized quote before analyzing the fetched string
 	Arg:
 		tokens (list):  a tokenized list of a quote
 	Return:
-		a list of the normalized tokens
-	"""
+		a list of the normalized tokens"""
 	for idx, token in enumerate(tokens):
 		if "'" in token:
 			tokens[idx-1] += tokens[idx]
@@ -439,11 +361,10 @@ def normalize_tokens(tokens):
 
 def find_invalid():
 	"""Find
-	  1 database quotes which do not contain any valid tags for switching,
-	  2 words in dictionary containing apostrophes, and
-	  3 one letter dictionary words.
-	"""
-	con = lite.connect("quotes.db")
+	1 database quotes which do not contain any valid tags for switching, and
+	2 words in dictionary containing invalid characters: (apostrophes, hyphens, punctuation...).
+	DEPRICATED, see parse_for_dictionary"""
+	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 	invalids = []
 	
@@ -505,40 +426,47 @@ def main():
 	parser = argparse.ArgumentParser(description="A quote randomizer.")
 	parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
 	parser.add_argument("--tags", help="Shows info on all tags used to categorize words into classes.", action="store_true")
-	parser.add_argument("--rebuild-database", nargs="?", metavar="mode", const="full", help="Rebuilds the entire database by executing quotes.sql. Drops all previous data from quotes and lyrics but does not modify the dictionary. If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary. If mode is set to 'quick' the dictionary is not modified.")
+	parser.add_argument("--rebuild-database", nargs="?", metavar="mode", const="full", help="""Rebuilds the entire database by executing quotes.sql.
+		Drops all previous data from quotes and lyrics but does not modify the dictionary. If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary.
+		If mode is set to 'quick' the dictionary is not modified.""")
 	parser.add_argument("--song", help="Generates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.", action="store_true")
 	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
 	parser.add_argument("--set-song", metavar="song", help="Sets the given song to be the next one read by the '--song' switch. See the search column of the lyrics table for valid names.")
 	parser.add_argument("--find-duplicates", help="Prints the first instance of quotes having a duplicate in the database.", action="store_true")
-	parser.add_argument("--find-invalid", help="Find all quotes that do not contain proper words to change. Also searches the dictionary for single letter words and words containing apostrophes and prompts for deletion.", action="store_true")
-	parser.add_argument("--bot", metavar="mode", help="Generates a quote or a song lyric and posts it to Twitter. Mode should be either 'quote' or 'song'. Requires access tokens and API keys from Twitter.")
-	parser.add_argument("--fact", help="Generate a randomized fact", action="store_true")
+	parser.add_argument("--bot", metavar="mode", help="Generates a quote or a song lyric and posts it to Twitter. Requires access tokens and API keys from Twitter.")
+	parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
 
 	args = parser.parse_args()
 	#print args
 
+	#######################
+	# File initialization #
+	#######################
 	# no database detected -> create it, show usage information and exit
-	if not os.path.isfile("quotes.db"):
+	if not os.path.isfile(path+"quotes.db"):
 		ans = raw_input("The database quotes.db does not exist. Create a new one? (y/N)\n")
 		if ans == "y":
-			with lite.connect("quotes.db"):
+			with lite.connect(path+"quotes.db"):
 				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT)")
-			update_db()
+			dbaccess.update_db()
 			print "usage:"
 			parser.print_help()
 			sys.exit()
 
 
-	con = lite.connect("quotes.db")
+	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
 	if args.size:
-		database_size()
+		dbaccess.database_size()
 
 	elif args.tags:
 		nltk.help.upenn_tagset()
 
-	# rebuild database. If no optional parameter was provided, also recreate the dictionary.
+	######################
+	# --rebuild-database #
+	######################
+	# If no optional parameter was provided, also recreate the dictionary.
 	elif args.rebuild_database:
 		quick = False
 		mode = args.rebuild_database # check for optional parameter, if none default to 'full'
@@ -549,11 +477,14 @@ def main():
 
 		if mode == "quick":
 			quick = True
-		update_db(quick)
+		dbaccess.update_db(quick)
 
 	elif args.song:
 		randomize_lyric()
 
+	###############
+	# --init-song #
+	###############
 	# change the status codes of the lyrics table back to initial values
 	elif args.init_song:
 		with con:
@@ -563,6 +494,9 @@ def main():
 			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, 1))
 		print "Done"
 
+	##############
+	# --set-song #
+	##############
 	# attempt to set the provided song to be the next one read from the database
 	elif args.set_song:
 		arg = args.set_song
@@ -577,16 +511,18 @@ def main():
 				cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
 				cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
 
+	#####################
+	# --find-duplicates #
+	#####################
 	elif args.find_duplicates:
 		with con:
 			query = "SELECT rowid, quote FROM quotes GROUP BY quote HAVING COUNT(*) > 1"
 			for dupe in cur.execute(query):
 				print dupe[0], dupe[1]
 
-	elif args.find_invalid:
-		print "Checking database for invalid entries, please wait."
-		find_invalid()
-
+	#########
+	# --bot #
+	#########
 	# tweet
 	elif args.bot:
 		msg = ""
@@ -615,7 +551,7 @@ def main():
 				msg = randomized_lyric[1]
 
 
-		with open("keys.json") as f:
+		with open(path+"keys.json") as f:
 			data = json.load(f)
 			API_KEY = data["API_KEY"]
 			API_SECRET = data["API_SECRET"]
@@ -625,6 +561,9 @@ def main():
 		twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
 		twitter.update_status(status=msg)
 
+	##########
+	# --fact #
+	##########
 	elif args.fact:
 		get_fact()
 
@@ -642,7 +581,6 @@ if __name__ == "__main__":
 	except ValueError as e:
 		print e
 	
-
 	
 
 

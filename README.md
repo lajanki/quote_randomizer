@@ -76,6 +76,8 @@ Command line arguments:
 
 * quotes.py
   - The main script.
+* dbaccess.py
+  - an API to access the database.
 * keys.json
   - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required for the tweeting component, ie. when running with '--bot quote' or '--bot song'.
 * quotes.sql
@@ -92,6 +94,8 @@ Command line arguments:
 
 
 #### Changelog
+11.7.2016
+* refactoring: moved general database query functions update_db(), parse_for_dictionary() and database_size() to their own module for easier access to other scripts utilizing the database.
 24.2.2016
 * removed the cumbersom START, END marking of quotes.sql. Instead all of quotes and lyrics are now parsed for the dictionary.
 * cleaned up database creation down to a single function.
