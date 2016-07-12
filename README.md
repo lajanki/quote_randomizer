@@ -96,6 +96,7 @@ Command line arguments:
 #### Changelog
 11.7.2016
 * refactoring: moved general database query functions update_db(), parse_for_dictionary() and database_size() to their own module for easier access to other scripts utilizing the database.
+
 24.2.2016
 * removed the cumbersom START, END marking of quotes.sql. Instead all of quotes and lyrics are now parsed for the dictionary.
 * cleaned up database creation down to a single function.
