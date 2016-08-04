@@ -31,28 +31,34 @@
 #                                                                             #					
 #																			  #
 # Change log:																  #
+# 26.7.2016 																  #
+#	* Simplified switch(). Someone sure wrote a convoluted way to achieve     #
+#	  a simple task. 														  #
+#	* Moved the database connection and cursor object to global variables     #
+#	  to prevent the nested db functions from creating new ones on each       #
+#	  invocation. 														      #
 # 11.7.2016 																  #
-#	* refactoring: moved general database query functions update_db(),        #
+#	* Refactoring: moved general database query functions update_db(),        #
 #	  parse_for_dictionary() and database_size() to their own module for      #
 #	  easier access to other scripts utilizing the database.                  #
 # 29.3.2016 																  #
-#	* changed parse_for_dictionary() to guard against all invalid dictionary  #
+#	* Changed parse_for_dictionary() to guard against all invalid dictionary  #
 #	  entries, the --find-invalid switch is now depricated 					  #
 # 23.2.2016																	  #
-#	* removed the cumbersom START, END marking of quotes.sql. Running		  #
+#	* Removed the cumbersom START, END marking of quotes.sql. Running		  #
 #	  update_db() now drops and re-inserts all previous data.				  #
 #	  This is slower, but this function is rarely used. 					  #
-#	* cleaned up database creation to one function				 			  #
-#	* added parse_for_dictionary() as a dedicated function for parsing		  #
+#	* Cleaned up database creation to one function				 			  #
+#	* Added parse_for_dictionary() as a dedicated function for parsing		  #
 #	  strings for valid words to add to the dictionary.   					  #
 #	  Words with apostrophes and one letter words are not considered valid.   #
-#	* additionally changed find_invalid() to reflect the above changes:		  #
+#	* Additionally changed find_invalid() to reflect the above changes:		  #
 #	  now also finds and deletes all one letter words     					  #
 #	  and optionally deletes words with apostrophes. 		  				  #
 # 4.1.2016                                                                    #
-#	* changed switch() to work with capitalized words.			 		  	  #
+#	* Changed switch() to work with capitalized words.			 		  	  #
 # 27.10.2015																  #
-#	* initial version 												  		  #
+#	* Initial version 												  		  #
 ###############################################################################
 
 
@@ -69,7 +75,12 @@ import random
 import dbaccess
 
 
+# set connection to the database as a global variable to prevent nested function calls
+# from re-creating these.
+# TODO: maybe change to a class?
 path = "/home/pi/python/quotes/"
+con = lite.connect(path+"quotes.db")
+cur = con.cursor()
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
@@ -79,13 +90,10 @@ CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "VB", "VBN", "VBD", "VB
 # Database functions #
 #====================#
 def get_quote():
-	"""Fetch a random quote from the database.
+	"""Fetch a random quote or a fact from the database.
 	Return:
 		(quote, author) tuple
 	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
-
 	with con:
 		cur.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
 		randomized = cur.fetchone()
@@ -93,7 +101,7 @@ def get_quote():
 		# update lyrics table's status codes to allow the processing of the next song
 		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
 
-		return (randomized[0], randomized[1])
+	return (randomized[0], randomized[1])
 
 
 def get_lyric():
@@ -102,9 +110,6 @@ def get_lyric():
 	Return:
 		(title, lyric) tuple of the next lyric to be processed, possible None
 	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
-
 	with con:
 		# get the rowid of the next line to be processed
 		cur.execute("SELECT status FROM lyrics WHERE rowid = ?", (1,))
@@ -153,22 +158,18 @@ def get_lyric():
 
 		# no satus code - the current song is not done. Fetch the next row and update the
 		# first row.
-		else:
-			next_idx = row_idx + 1
-			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (next_idx, 1))
-			return (title, lyric)
+		next_idx = row_idx + 1
+		cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (next_idx, 1))
+		return (title, lyric)
 
 
 def get_fact():
 	"""Randomize a fact and print it on screen."""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
-
 	with con:
 		cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
 		fact = cur.fetchone()
 		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
-		randomized = randomize(fact)
+	randomized = randomize(fact)
 		
 
 #==============================================================================
@@ -186,37 +187,29 @@ def switch(string):
 	Return:
 		a dict of the randomized string, words replaced and words inserted
 	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
-
 	# tokenize, reattach apostrophes and pos tag tokens
-	tokens = nltk.word_tokenize(string)
-	tokens = normalize_tokens(tokens)
+	tokens = normalize_tokens(nltk.word_tokenize(string))
 	tagged = nltk.pos_tag(tokens)
-	
-	# initialize a dict for counting the number of applicable words for switching
-	tags = {tag: 0 for tag in CLASSES}
 
-	# count the number of applicable words
-	for word, tag in tagged:
-		if tag in CLASSES:
-			tags[tag] += 1
+	invalid_tokens = [
+		"'",
+		"http",
+		"@",
+		"//",
+		"#",
+	]
 
-	# total number of words applicable for the switch
-	total = sum(tags.values())
+	# get tuples of (idx, word, tag) of valid tokens in tagged
+	valid = [ (idx, item[0], item[1]) for idx, item in enumerate(tagged)
+		if not any(token in item[0] for token in invalid_tokens) and item[1] in CLASSES ]
 
-	# if the quote doesn't contain any valid words, exit with error code
-	if total == 0:
+	# determine the number of switches to make based on number of valid words detected
+	if not valid:
 		raise ValueError("Error: no valid words to change.\n" + string)
 
-	# set the number of words to change:
-	# short quote -> always change one word.
-	elif total < 4:
+	elif len(valid) < 4:
 		change_degree = 1
-	
-	# > 3 valid words:
-	# randomize the number of words to change:
-	# 1 should be much more common than 3
+
 	else:
 		dice = random.random()
 		if dice <= 0.66:
@@ -226,82 +219,53 @@ def switch(string):
 		else:
 			change_degree = 3
 
-	# get the tags that are actually present in the string and shuffle them
-	keys = [tag for tag in tags.keys() if tags[tag] > 0]
-	random.shuffle(keys)
+	words_to_change = random.sample(valid, change_degree)
 
-	change_tags = []
-	# randomly choose change_degree different tags to determine which words
-	# to switch 
-	for i in range(change_degree):
-		change_tags.append(random.choice(keys))
-	
-	# get all words whose tags are in the list of tags to be used for the switch
-	valid_words = [(word, tag) for word, tag in tagged if tag in change_tags]
-	#if not valid_words:   # should not occur!
-	#	raise ValueError("No valid words to change.\n" + string)
-
-	# shuffle the list and finally choose the first change_degree words to be the
-	# ones to change.
-	random.shuffle(valid_words)
-	words_to_change = valid_words[0:change_degree]
-
-	old = ""
-	for item in words_to_change:
-		old += item[0] + " "
-	print "words to replace:", old
-
-	# get random new words from the dictionary (making sure the new tags are the same as
-	# the old ones)
-	# Note: there needs to enough words with the correct tags in the database for this to work.
+	# fetch new words from database and make the switch
 	new_words = []
 	with con:
-		for word, tag in words_to_change:
-			cur.execute("SELECT word, class FROM dictionary WHERE class = ? AND word != ? ORDER BY RANDOM()", (tag, word))
+		for token in words_to_change:
+			cur.execute("SELECT word, class FROM dictionary WHERE class = ? AND word != ? ORDER BY RANDOM()", (token[2], token[1]))
 			db_word = cur.fetchone()
-
 			new = db_word[0]
+
 			# capitalize the new word if necessary:
-			# whole word
-			if word == word.upper():
-				new = db_word[0].upper()
+			# the whole word
+			if token[1] == token[1].upper():
+				new = new.upper()
 
 			# first letter only
-			elif word == word.capitalize():
-				new = db_word[0].capitalize()
+			elif token[1] == token[1].capitalize():
+				new = new.capitalize()
 
-			db_word = (new, db_word[1])
-			new_words.append(db_word)
-		
-	new = ""
-	for item in new_words:
-		new = new + item[0] + " "
-	print "new words:", new
-
-	# perform the switch
-	# note: the index of words_to_change matches new_words
-	for idx in range(len(words_to_change)):
-		change_idx = tokens.index(words_to_change[idx][0])
-		tokens[change_idx] = new_words[idx][0]
-
-	# nltk.word_tokenize interprets punctuation marks as their own tokens,
-	# reattach them to previous words
-	punctuation_marks = [".", ",", "!", "?", "$", ":", ";", "..."]
-	for idx, token in enumerate(tokens):
-		if token in punctuation_marks:
-			tokens[idx-1] += token
-
-	# filter out the now lone punctuation mark
-	tokens = [token for token in tokens if token not in punctuation_marks]
-
-	# capitalize the final sentence and stich it back to a string from a list
-	encoded = [(word.encode("utf-8")) for word in tokens]
-
-	s = " ".join(encoded)
-
-	return {"randomized": s, "new": new, "old": old}
+			# replace the old word at tokens with this word
+			tokens[token[0]] = new
+			new_words.append(new)
 
 
+	# join the word back together and trim extra whitespace around punctuation
+	punctuation = {
+		" .": ".",
+		" ,": ",",
+		" !": "!",
+		" ?": "?",
+		" :": ":",
+		" ;": ";",
+		"$ ": "$",
+		"@ ": "@",  #for tweets, won't fix emails!
+		"# ": "#",
+		"`` ": "\"",
+		"''": "\"",
+		"https: ": "https:",
+		"http: ": "http:"
+	}
+	s = " ".join(tokens)
+	for old, new in punctuation.iteritems():
+		s = s.replace(old, new)
+
+	return {"randomized": s, "old": words_to_change, "new": new_words}
+
+	
 def randomize(quote_record):
 	"""Randomize a quote by calling switch().
 	Arg:
@@ -341,82 +305,23 @@ def randomize_lyric():
 def normalize_tokens(tokens):
 	"""nltk.word_tokenize() will tokenize words using ' as an apostrophe into
 	two tokens: eg. "can't" -> ["can", "'t"].
-	While parse_for_dictionary() will take care of not including apostophes into
-	the dictionary, quotes.sql still uses ' as an apostrophe and its contents
-	need to inserted into the database.
-	This function normalizes tokens by reattaching the parts back together.
-	switch() uses this to normalize a tokenized quote before analyzing the fetched string
+	This function normalizes tokens by reattaching the parts back together. This will prevent
+	switch() from choosing the prefixes to be switched. Apostrophe words are rejected anyway.
 	Arg:
 		tokens (list):  a tokenized list of a quote
 	Return:
 		a list of the normalized tokens"""
 	for idx, token in enumerate(tokens):
-		if "'" in token:
-			tokens[idx-1] += tokens[idx]
-			tokens[idx] = "DEL"
+		try:
+			if "'" in token:
+				tokens[idx-1] += tokens[idx]
+				tokens[idx] = "DEL"
+		except IndexError as e:
+			print e
 
 	normalized = [token for token in tokens if token != "DEL"]
 	return normalized
 
-
-def find_invalid():
-	"""Find
-	1 database quotes which do not contain any valid tags for switching, and
-	2 words in dictionary containing invalid characters: (apostrophes, hyphens, punctuation...).
-	DEPRICATED, see parse_for_dictionary"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
-	invalids = []
-	
-	with con:
-		for row in cur.execute("SELECT quote FROM quotes"):
-			quote = row[0]
-			invalid = True
-			tokens = nltk.word_tokenize(quote)
-			tokens = normalize_tokens(tokens)
-			tagged = nltk.pos_tag(tokens)
-
-			for word, tag in tagged:
-				if tag in CLASSES:
-					invalid = False
-					break
-
-			if invalid:
-				invalids.append(tagged)
-
-		if invalids:
-			print "Invalid quotes:"
-			for item in invalids:
-				print item
-		else:
-			print "No invalid quotes."
-
-		# check dictionary for apostrophes
-		# is this really the way to go?
-		cur.execute("SELECT * FROM dictionary WHERE word LIKE ? OR word LIKE ? OR word LIKE ? OR word LIKE ? OR word LIKE ?", (u"%'%", u"%`%", u"%´%", u'%"%', u"%’%"))
-		invalids = cur.fetchall()
-		if invalids:
-			print "Words with apostrophes (', ´, `, ’):"
-			print invalids
-
-			# ask for deletion
-			delete = raw_input("Remove these from database? (y/N)\n")
-			if delete == "y":
-				cur.execute("DELETE FROM dictionary WHERE word LIKE ? OR word LIKE ? OR word LIKE ? OR word LIKE ? OR word LIKE ?", (u"%'%", u"%`%", u"%´%", u'%"%', u"%’%"))
-				print str(len(invalids)) + " entries deleted."
-			else:
-				print "No deletions done."
-		else:
-			print "No words with apostrophes."
-
-		# check for one letter words
-		cur.execute("SELECT word FROM dictionary WHERE length(word) = ?", (1,))
-		invalid = cur.fetchall()
-		if invalid:
-			cur.execute("DELETE FROM dictionary WHERE length(word) = ?", (1,))
-			print "Deleted the following one letter words:"
-			print invalid
-		
 
 #==============================================================================
 # Main #
@@ -446,16 +351,13 @@ def main():
 	if not os.path.isfile(path+"quotes.db"):
 		ans = raw_input("The database quotes.db does not exist. Create a new one? (y/N)\n")
 		if ans == "y":
-			with lite.connect(path+"quotes.db"):
+			with con:
 				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT)")
 			dbaccess.update_db()
 			print "usage:"
 			parser.print_help()
 			sys.exit()
 
-
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
 
 	if args.size:
 		dbaccess.database_size()

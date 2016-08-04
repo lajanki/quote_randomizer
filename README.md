@@ -94,6 +94,9 @@ Command line arguments:
 
 
 #### Changelog
+4.8.2016
+* simplified switch().
+
 11.7.2016
 * refactoring: moved general database query functions update_db(), parse_for_dictionary() and database_size() to their own module for easier access to other scripts utilizing the database.
 
