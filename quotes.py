@@ -1,65 +1,63 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-###############################################################################
-# quote.py - A Random Quote Generator                                         #
-# Picks a random actual quote or a fact from a database, chooses 1-3 words	  #
-# and randomly switches them to new ones. Uses a natural language toolkit	  #
-# module (nltk) to tag words into classes in order to choose a right type	  #
-# of words to be replaced. 													  #
-#                                                                             #
-# Can also be used to work with song lyrics: the script reads lyrics line     #
-# by line, randomizes them and outputs the result.                            #
-#                                                                             #
-# Uses a database (quotes.db) to store and read quotes. The database consists #
-# of 3 tables:                                                                #
-#   * quotes: pairs of quotes and authors taken from real people, movies and  #
-#     games                                                                   #
-#   * lyrics: full lyrics to songs                                            #
-#   * dictionary: a table of words parsed from the other tables.              #
-#                                                                             #
-#                                                                             #
-# Requires:                                                                   #
-#  Modules                                                                    #
-#  * Natural Language Toolkit                                                 #
-#      http://www.nltk.org/index.html                                         #
-#  * Twython:                                                                 #
-#      https://twython.readthedocs.org/en/latest/                             #
-#  Keys:                                                                      #
-#  * The Twitter bot feature requires access tokens and keys from Twitter     #
-#      https://dev.twitter.com/oauth/overview/application-owner-access-tokens #        
-#                                                                             #					
-#																			  #
-# Change log:																  #
-# 26.7.2016 																  #
-#	* Simplified switch(). Someone sure wrote a convoluted way to achieve     #
-#	  a simple task. 														  #
-#	* Moved the database connection and cursor object to global variables     #
-#	  to prevent the nested db functions from creating new ones on each       #
-#	  invocation. 														      #
-# 11.7.2016 																  #
-#	* Refactoring: moved general database query functions update_db(),        #
-#	  parse_for_dictionary() and database_size() to their own module for      #
-#	  easier access to other scripts utilizing the database.                  #
-# 29.3.2016 																  #
-#	* Changed parse_for_dictionary() to guard against all invalid dictionary  #
-#	  entries, the --find-invalid switch is now depricated 					  #
-# 23.2.2016																	  #
-#	* Removed the cumbersom START, END marking of quotes.sql. Running		  #
-#	  update_db() now drops and re-inserts all previous data.				  #
-#	  This is slower, but this function is rarely used. 					  #
-#	* Cleaned up database creation to one function				 			  #
-#	* Added parse_for_dictionary() as a dedicated function for parsing		  #
-#	  strings for valid words to add to the dictionary.   					  #
-#	  Words with apostrophes and one letter words are not considered valid.   #
-#	* Additionally changed find_invalid() to reflect the above changes:		  #
-#	  now also finds and deletes all one letter words     					  #
-#	  and optionally deletes words with apostrophes. 		  				  #
-# 4.1.2016                                                                    #
-#	* Changed switch() to work with capitalized words.			 		  	  #
-# 27.10.2015																  #
-#	* Initial version 												  		  #
-###############################################################################
+"""
+quote.py - A Random Quote Generator
+Picks a random actual quote or a fact from a database, chooses 1-3 words
+and randomly switches them to new ones. Uses a natural language toolkit
+module (nltk) to tag words into classes in order to choose a right type
+of words to be replaced.
+
+Can also be used to work with song lyrics: the script reads lyrics line
+by line, randomizes them and outputs the result.
+
+Uses a database (quotes.db) to store and read quotes. The database consists
+of 3 tables:
+  * quotes: pairs of quotes and authors taken from real people, movies and
+	games
+  * lyrics: full lyrics to songs
+  * dictionary: a table of words parsed from the other tables.
+
+Requires:
+  Modules
+	* Natural Language Toolkit
+	  http://www.nltk.org/index.html
+	* Twython:
+	  https://twython.readthedocs.org/en/latest/
+  Keys:
+	* The Twitter bot feature requires access tokens and keys from Twitter
+	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens  				
+
+Change log:
+26.7.2016
+  * Simplified switch(). Someone sure wrote a convoluted way to achieve
+	a simple task.
+  * Moved the database connection and cursor object to global variables
+	to prevent the nested db functions from creating new ones on each
+	invocation.
+11.7.2016
+  * Refactoring: moved general database query functions update_db(),
+	parse_for_dictionary() and database_size() to their own module for
+	easier access to other scripts utilizing the database.
+29.3.2016
+  * Changed parse_for_dictionary() to guard against all invalid dictionary
+	entries, the --find-invalid switch is now depricated
+23.2.2016
+  * Removed the cumbersom START, END marking of quotes.sql. Running
+	update_db() now drops and re-inserts all previous data.
+	This is slower, but this function is rarely used.
+  * Cleaned up database creation to one function
+  * Added parse_for_dictionary() as a dedicated function for parsing
+	strings for valid words to add to the dictionary.
+	Words with apostrophes and one letter words are not considered valid.
+  * Additionally changed find_invalid() to reflect the above changes:
+	now also finds and deletes all one letter words
+	and optionally deletes words with apostrophes.
+4.1.2016
+  * Changed switch() to work with capitalized words.
+27.10.2015
+  * Initial version
+"""
 
 
 import sqlite3 as lite
@@ -77,7 +75,7 @@ import dbaccess
 
 # set connection to the database as a global variable to prevent nested function calls
 # from re-creating these.
-# TODO: maybe change to a class?
+# TODO: maybe change to a class? move to dbaccess?
 path = "/home/pi/python/quotes/"
 con = lite.connect(path+"quotes.db")
 cur = con.cursor()
@@ -381,6 +379,9 @@ def main():
 			quick = True
 		dbaccess.update_db(quick)
 
+	##########
+	# --song #
+	##########
 	elif args.song:
 		randomize_lyric()
 
@@ -401,9 +402,8 @@ def main():
 	##############
 	# attempt to set the provided song to be the next one read from the database
 	elif args.set_song:
-		arg = args.set_song
 		with con:
-			cur.execute("SELECT rowid FROM lyrics WHERE search = ?", (arg,))
+			cur.execute("SELECT rowid FROM lyrics WHERE search = ?", (args.set_song,))
 			row = cur.fetchone()
 
 			if row == None:
@@ -439,9 +439,9 @@ def main():
 			randomized_quote = randomize(quote)
 
 			if randomized_quote[1] == "fact":
-				msg = "Random non-fact:\n"+randomized_lyric[0]
+				msg = "Random non-fact:\n" + randomized_quote[0]
 			else:
-				msg = randomized_quote[0]+"\n"+"--"+randomized_quote[1]
+				msg = randomized_quote[0] + "\n" + "--" + randomized_quote[1]
 
 		else: 	# mode == "song"
 			randomized_lyric = randomize_lyric()
