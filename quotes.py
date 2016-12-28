@@ -29,6 +29,13 @@ Requires:
 	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens  				
 
 Change log:
+28.12.2016
+  * Made the quote column in the database UNIQUE, this should have probably
+    been there from the start. Also removed the, now redundant, redundancy check.
+  * Added a frequency column to the database to indicate the number of times
+    a quote was randomly picked.
+  * Added a confirmation prompt for clearing the dictionary when using
+  	--rebuild-database. This sure would have been useful earlier...
 26.7.2016
   * Simplified switch(). Someone sure wrote a convoluted way to achieve
 	a simple task.
@@ -75,7 +82,7 @@ import dbaccess
 
 # set connection to the database as a global variable to prevent nested function calls
 # from re-creating these.
-# TODO: maybe change to a class? move to dbaccess?
+# TODO: maybe change to a class?
 path = "/home/pi/python/quotes/"
 con = lite.connect(path+"quotes.db")
 cur = con.cursor()
@@ -93,13 +100,18 @@ def get_quote():
 		(quote, author) tuple
 	"""
 	with con:
-		cur.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
-		randomized = cur.fetchone()
+		cur.execute("SELECT rowid, * FROM quotes ORDER BY RANDOM() LIMIT 1")
+		row = cur.fetchone()
+
+		# update the frequency column
+		frequency = row[3] + 1
+		rowid = row[0]
+		cur.execute("UPDATE quotes SET frequency=? WHERE rowid=?", (frequency, rowid))
 
 		# update lyrics table's status codes to allow the processing of the next song
 		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
 
-	return (randomized[0], randomized[1])
+	return (row[1], row[2])
 
 
 def get_lyric():
@@ -335,7 +347,6 @@ def main():
 	parser.add_argument("--song", help="Generates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.", action="store_true")
 	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
 	parser.add_argument("--set-song", metavar="song", help="Sets the given song to be the next one read by the '--song' switch. See the search column of the lyrics table for valid names.")
-	parser.add_argument("--find-duplicates", help="Prints the first instance of quotes having a duplicate in the database.", action="store_true")
 	parser.add_argument("--bot", metavar="mode", help="Generates a quote or a song lyric and posts it to Twitter. Requires access tokens and API keys from Twitter.")
 	parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
 
@@ -377,6 +388,12 @@ def main():
 
 		if mode == "quick":
 			quick = True
+		if mode == "full":
+			ans = raw_input("This will drop all data from the dictionary! Continue? (y/N)\n")
+			if ans != "y":
+				print "Exiting."
+				sys.exit()
+			
 		dbaccess.update_db(quick)
 
 	##########
@@ -412,15 +429,6 @@ def main():
 			else:
 				cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
 				cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
-
-	#####################
-	# --find-duplicates #
-	#####################
-	elif args.find_duplicates:
-		with con:
-			query = "SELECT rowid, quote FROM quotes GROUP BY quote HAVING COUNT(*) > 1"
-			for dupe in cur.execute(query):
-				print dupe[0], dupe[1]
 
 	#########
 	# --bot #

@@ -64,9 +64,6 @@ Command line arguments:
 
 --set-song <name>
   * Sets the given song to be the next one read by the --song switch. See the 'search' column of the lyrics table for valid names.
-
---find-duplicates
-  * Prints the first instance of quotes having a duplicate in the database.
   
 --find-invalid
   * Finds database quotes which do not contain enough valid tags for switching.
@@ -94,6 +91,11 @@ Command line arguments:
 
 
 #### Changelog
+28.12.2016
+* Made the quote column in the database UNIQUE and removed the related redundancy check.
+* Added a frequency column to the database to indicate the number of times a quote has been picked.
+* Added a confirmation prompt for clearing the dictionary when using --rebuild-database.
+
 4.8.2016
 * simplified switch().
 
