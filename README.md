@@ -22,14 +22,12 @@ dictionary: a table of words parsed from the other tables.
 Python modules:
  * Natural Language Toolkit (nltk)
      http://www.nltk.org/index.html
- * sqlite3  (part of the standard library on newer Python versions)
-
-Additionally the Tweeting feature requires:
+ * sqlite3
  * Twython:
      https://twython.readthedocs.org/en/latest/
 
 Keys:
- * You will need to register a Twitter app to get your own Twitter access tokens and developer keys, see https://dev.twitter.com/oauth/overview/application-owner-access-tokens Store these keys to the keys.json file.
+ * Using the bot feature requires Twitter access tokens and developer keys, see https://dev.twitter.com/oauth/overview/application-owner-access-tokens. These keys should be stored in keys.json file.
 
 
 ## Usage
@@ -37,36 +35,32 @@ Keys:
 When run without any command line arguments the script generates a randomized quote to console window.
 Command line arguments:
 
+```
 --rebuild-database [mode]
- *  Rebuilds the entire database by executing quotes.sql. Drops all previous data from quotes and lyrics but does not modify the dictionary. If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary. If mode is set to 'quick' the dictionary is not modified.
- *  If mode is set to 'quick', the dictionary is not modified.
+Rebuilds the database by executing quotes.sql. If mode is set to 'quick' the dictionary is not modified, otherwise inserted quotes are also parsed for the dictionary 
 
 --song
-  * Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
+Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
 
 --tags
-  * Shows info on all tags used to categorize words into classes.
+ Shows info on all tags used to classicy words.
 
 --size
-  * Shows the size of the databse.
+ Shows the size of the databse.
 
---bot <mode>
-  * If mode is set to 'quote', generates either a randomized quote or a fact and posts it to Twitter. If mode is 'song', processes the next song lyric from the current song and posts to Twitter.
-  * Both modes require access tokens and API keys from Twitter.
+--bot mode
+If mode is set to 'quote', generates either a randomized quote or a fact and posts it to Twitter. If mode is 'song', processes the next song lyric from the current song and posts to Twitter.
 
 --fact
-  * Generate a randomized fact to print it on screen.
+Generate a randomized fact to print it on screen.
 
-
-##### Maintenance commands
 --init-song
-  * Changes the status codes for the lyrics table back to initial values.
+Changes the status codes for the lyrics table back to initial values.
 
---set-song <name>
-  * Sets the given song to be the next one read by the --song switch. See the 'search' column of the lyrics table for valid names.
-  
---find-invalid
-  * Finds database quotes which do not contain enough valid tags for switching.
+--set-song song
+Sets the given song to be the next one read by the --song switch. See the 'search' column of the lyrics table for valid names.
+```
+
 
 
 ## File structure
@@ -76,9 +70,9 @@ Command line arguments:
 * dbaccess.py
   - an API to access the database.
 * keys.json
-  - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required for the tweeting component, ie. when running with '--bot quote' or '--bot song'.
+  - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required when running with ```--bot quote``` or ```--bot song```.
 * quotes.sql
-  - A file used to create the database. Updating the database is done by manually updating this file and running the main script with the --rebuild-database switch.
+  - SQL statements to create the database. Updating the database is done by manually updating this file and running the main script with the ```--rebuild-database``` switch.
 * quotes.db
   - The databse containing three tables:
     1. quotes: a pair of (quote, author) records
