@@ -1,8 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# A library module for general access points to quotes.db. 
-# 11.7.2016
+"""
+A library module for general access points to quotes.db.
+
+changelog
+4.1.2017
+  * Added error handling to update_db() when multiples of the same quote is encoutered.
+26.7.2016
+  * Added normalize_tokens() to parse_for_dictionary() to prevent 
+	the "can't" -> ["ca", "n't"] behaviour of nltk.word_tokenize().
+  * Added some rejection tokens to parse_for_dictionary().
+11.7.2016
+  * Initial version.
+"""
+
 
 import nltk
 import sqlite3 as lite
@@ -28,17 +40,21 @@ def update_db(quick=False):
 
 	with con:
 		print "Executing quotes.sql, please wait..."
+		multiples = []
 		with open(path+"quotes.sql") as f:
-			try:
-				lines = [line.rstrip("\n;").lstrip("\t") for line in f]
-				for sql in lines:
+			lines = [line.rstrip("\n;").lstrip("\t") for line in f]
+			for sql in lines:
+				try:
 					cur.execute(sql)
-			except lite.Warning as e:
-				print "Error: something went wrong with the update."
-				print e
-				print sql
-				sys.exit()
+				except (lite.Warning, lite.IntegrityError) as e:
+					print e
+					multiples.append(sql)
+
 		print "Done"
+		if multiples:
+			print "An error occured when processing the following quotes and they were skipped:"
+			for q in multiples:
+				print q
 
 	# check whether to parse quotes and lyrics for dictionary
 	if not quick:
@@ -54,8 +70,7 @@ def update_db(quick=False):
 
 
 def parse_for_dictionary(s, verbose=False):
-	"""Parse given string for database dictionary.
-	Exclude words already in the dictionary as well as words with punctuation
+	"""Parse given string for database dictionary. Exclude words already in the dictionary.
 	Args:
 		s (string): the string to parse
 		verbose (boolean): whether to show which words were rejected as punctuation
@@ -66,11 +81,21 @@ def parse_for_dictionary(s, verbose=False):
 	cur = con.cursor()
 
 	# replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's] 
-	s = s.replace("'", "`")
-	tokens = nltk.word_tokenize(s)
-	punctuation = [u"-", u"%", u"`", u"´", u"’", u"“", u"”", u"—", u"\"", u"."]
-	# find tokens not having punctuation and of length > 1
-	valid = [token for token in tokens if (not any([p in token for p in punctuation]) and len(token) > 1)]
+	tokens = normalize_tokens(nltk.word_tokenize(s))
+
+	# define characters for words that should be discluded if detected,
+	# these may not have a valid nltk pos_tag anyway.
+	invalid_tokens = [
+		"'",
+		"http",
+		"@",
+		"//",
+		"#",
+		"'"
+	]
+
+	# find valid tokens of length > 1
+	valid = [ token for token in tokens if (not any([item in token for item in invalid_tokens]) and len(token) > 1) ]
 	tagged = nltk.pos_tag([word.lower() for word in valid])
 
 	if not valid:
@@ -113,3 +138,26 @@ def database_size():
 			cur.execute("SELECT COUNT(word) FROM dictionary WHERE class = ?", (item,))
 			size = cur.fetchone()
 			print item, size[0]
+
+
+def normalize_tokens(tokens):
+	"""nltk.word_tokenize() will tokenize words using ' as an apostrophe into
+	two tokens: eg. "can't" -> ["can", "'t"].
+	This function normalizes tokens by reattaching the parts back together and
+	Returns the result as a tokenized list.
+	Arg:
+		tokens (list):  a tokenized list of a quote
+	Return:
+		a list of the normalized tokens"""
+	for idx, token in enumerate(tokens):
+		try:
+			if "'" in token:
+				tokens[idx-1] += tokens[idx]
+				tokens[idx] = "DEL"
+
+		# the first token contained "'". This shouldn't occur anyway
+		except IndexError as e:
+			print e
+
+	normalized = [token for token in tokens if token != "DEL"]
+	return normalized
