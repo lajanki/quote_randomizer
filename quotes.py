@@ -67,15 +67,15 @@ Change log:
 """
 
 
-import sqlite3 as lite
+
 import sys
-import getopt
 import twython
 import json
-import os.path
 import argparse
 import nltk
 import random
+import os.path
+import sqlite3 as lite
 
 import dbaccess
 
