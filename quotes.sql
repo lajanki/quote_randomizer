@@ -1,5 +1,8 @@
---luo taulukon lausahduksista
---lähteet: http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
+--A collection of quotes, lyrics and such for creating the quotes and lyrics table for the database.
+--Note: does not create the dictionary table.
+
+--sources:
+--http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
 --http://www.cs.virginia.edu/~robins/quotes.html
 --http://www.quotery.com/lists/top-500-greatest-quotes-of-all-time/
 --http://www.inc.com/lolly-daskal/100-motivational-quotes-that-will-inspire-you-to-succeed.html
@@ -564,7 +567,7 @@ INSERT INTO quotes(quote, author) VALUES ('The most important decision you make 
 INSERT INTO quotes(quote, author) VALUES ('The secret of being a bore is to tell everything.', 'Voltaire');
 INSERT INTO quotes(quote, author) VALUES ('Prejudices are what fools use for reason.', 'Voltaire');
 INSERT INTO quotes(quote, author) VALUES ('Liberty of thought is the life of the soul.', 'Voltaire');
-INSERT INTO quotes(quote, author) VALUES ('The best way to predict your future is to create it.', 'Peter F. Drucker');
+INSERT INTO quotes(quote, author) VALUES ('The best way to predict your future is to create it.', 'Peter Drucker');
 INSERT INTO quotes(quote, author) VALUES ('Being entirely honest with oneself is a good exercise.', 'Sigmund Freud');
 INSERT INTO quotes(quote, author) VALUES ('The madman is a dreamer awake.', 'Sigmund Freud');
 
@@ -672,7 +675,7 @@ INSERT INTO quotes(quote, author) VALUES ('If I can''t do it, it can''t be done.
 INSERT INTO quotes(quote, author) VALUES ('Laughing at our mistakes can lengthen our own life. Laughing at someone else’s can shorten it.', 'Cullen Hightower');
 INSERT INTO quotes(quote, author) VALUES ('If you can dream it, you can do it.', 'Walt Disney');
 INSERT INTO quotes(quote, author) VALUES ('People Just Want to Connect.', 'Tom Segura');
-INSERT INTO quotes(quote, author) VALUES ('Ask me a question in latin and i will answer you in greek.', 'Robert Oppenheimer');
+INSERT INTO quotes(quote, author) VALUES ('Ask me a question in latin and I will answer you in greek.', 'Robert Oppenheimer');
 INSERT INTO quotes(quote, author) VALUES ('They invented hugs to let people know you love them without saying anything.', 'Bil Keane');
 INSERT INTO quotes(quote, author) VALUES ('Silence is one of the hardest arguments to refute.', 'Josh Billings');
 INSERT INTO quotes(quote, author) VALUES ('Strength and growth come only through continuous effort and struggle.', 'Napoleon Hill');
@@ -734,7 +737,64 @@ INSERT INTO quotes(quote, author) VALUES ('You must trust and believe in people 
 INSERT INTO quotes(quote, author) VALUES ('Hope is being able to see that there is light despite all of the darkness.', 'Desmond Tutu');
 
 INSERT INTO quotes(quote, author) VALUES ('A ship is safe in harbor, but that''s not what ships are made for.', 'John Shedd');
+INSERT INTO quotes(quote, author) VALUES ('I''ve failed over and over and over again in my life and that is why I succeed.', 'Michael Jordan');
+INSERT INTO quotes(quote, author) VALUES ('If you want total security, go to prison. There you''re fed and clothed. The only thing lacking is freedom.', 'Dwight D. Eisenhower');
+INSERT INTO quotes(quote, author) VALUES ('The most common lies are the ones you tell yourself; Lying to others is an exception.', 'Friedrich Nietzsche');
+INSERT INTO quotes(quote, author) VALUES ('A clever person solves a problem. A wise person avoids it.', 'Albert Einstein');
+INSERT INTO quotes(quote, author) VALUES ('It is not flesh and blood, but heart which makes us fathers and sons.', 'Friedrich Schiller');
+INSERT INTO quotes(quote, author) VALUES ('He who doesn''t believe himself always lies.', 'Friedrich Nietzsche');
+INSERT INTO quotes(quote, author) VALUES ('After I learned about confirmation bias, I started seeing it everywhere.', 'Jon Ronson');
+INSERT INTO quotes(quote, author) VALUES ('Your most unhappy customers are your greatest source of learning.', 'Bill Gates');
+INSERT INTO quotes(quote, author) VALUES ('It would be a nice thing if humanity could survive.', 'Noam Chomsky');
+INSERT INTO quotes(quote, author) VALUES ('The compensation for dying is that I will learn all the things I was not able to learn here on Earth.', 'Alexander Imich');
 
+INSERT INTO quotes(quote, author) VALUES ('If you can''t feed a hundred people, feed just one.', 'Mother Teresa');
+INSERT INTO quotes(quote, author) VALUES ('I would die for my country but I could never let my country die for me.', 'Neil Kinnock');
+INSERT INTO quotes(quote, author) VALUES ('It is the cause, not the death, that makes the martyr.', 'Napoleon Bonaparte');
+INSERT INTO quotes(quote, author) VALUES ('Education is the key to unlock the golden door of freedom.', 'George Washington Carver');
+INSERT INTO quotes(quote, author) VALUES ('The first draft is nothing more than a starting point, so be wrong as fast as you can.', 'Andrew Stanton');
+INSERT INTO quotes(quote, author) VALUES ('Don''t worry about failure; you only have to be right once.', 'Drew Houston');
+INSERT INTO quotes(quote, author) VALUES ('When you do what you fear most, then you can do anything.', 'Stephen Richards');
+INSERT INTO quotes(quote, author) VALUES ('Reality is wrong. Dreams are for real.', 'Tupac Shakur');
+INSERT INTO quotes(quote, author) VALUES ('The future belongs to those who believe in the beauty of their dreams.', 'Eleanor Roosevelt');
+INSERT INTO quotes(quote, author) VALUES ('What is freedom of expression? Without the freedom to offend, it ceases to exist.', 'Salman Rushdie');
+
+INSERT INTO quotes(quote, author) VALUES ('You know your shortcomings yet You love yourself. How come you hate others for their shortcomings?', 'Swami Vivekananda');
+INSERT INTO quotes(quote, author) VALUES ('If you do not change direction, you may end up where you are heading.', 'Lao Tzu');
+INSERT INTO quotes(quote, author) VALUES ('A wise man can learn more from his enemies than a fool from his friends.', 'Niki Lauda');
+INSERT INTO quotes(quote, author) VALUES ('You may have to fight a battle more than once to win it.', 'Margaret Thatcher');
+INSERT INTO quotes(quote, author) VALUES ('The greatest happiness is to know the source of unhappiness.', 'Fyodor Dostoevsky');
+INSERT INTO quotes(quote, author) VALUES ('You’ll never find peace of mind until you listen to your heart.', 'George Michael');
+INSERT INTO quotes(quote, author) VALUES ('The greatest mistake you can make in life is to be continually fearing you will make one.', 'Elbert Hubbard');
+INSERT INTO quotes(quote, author) VALUES ('You never understand anybody that loves you.', 'Ernest Hemingway');
+INSERT INTO quotes(quote, author) VALUES ('My wife and I were happy for twenty years - then we met.', 'Rodney Dangerfield');
+INSERT INTO quotes(quote, author) VALUES ('It’s a good idea always to do something relaxing prior to making an important decision in your life.', 'Paulo Coelho');
+
+INSERT INTO quotes(quote, author) VALUES ('They lived and laughed and loved and left.', 'James Joyce');
+INSERT INTO quotes(quote, author) VALUES ('All the problems in the world can be traced to what fathers do to their sons.', 'George Carlin');
+INSERT INTO quotes(quote, author) VALUES ('Plans are worthless, but planning is everything.', 'Dwight D. Eisenhower');
+INSERT INTO quotes(quote, author) VALUES ('I''m a success today because I had a friend who believed in me and I didn''t have the heart to let him down.', 'Abraham Lincoln');
+INSERT INTO quotes(quote, author) VALUES ('Individually, we are one drop. Together, we are an ocean.', 'Ryunosuke Satoro');
+INSERT INTO quotes(quote, author) VALUES ('History doesn''t repeat itself, but it does rhyme.', 'Mark Twain');
+INSERT INTO quotes(quote, author) VALUES ('Imagination is more important than knowledge.', 'Albert Einstein');
+INSERT INTO quotes(quote, author) VALUES ('If you make an effort and don''t receive any in return, then stop making an effort.', 'Gurpreet Ghotra');
+INSERT INTO quotes(quote, author) VALUES ('Live each day as if it were your last.', 'Marcus Aurelius');
+INSERT INTO quotes(quote, author) VALUES ('Happiness is not something you postpone for the future; it is something you design for the present.', 'Jim Rohn');
+
+INSERT INTO quotes(quote, author) VALUES ('If you want to keep your sanity, never let yourself become overwhelmed by things you can’t control.', 'William Chapman');
+INSERT INTO quotes(quote, author) VALUES ('Within you is a stillness and a sanctuary to which you can retreat at any time and be yourself.', 'Hermann Hesse');
+INSERT INTO quotes(quote, author) VALUES ('When we are not sure, we are alive.', 'Graham Greene');
+INSERT INTO quotes(quote, author) VALUES ('Chop your own wood and it will warm you twice.', 'Henry Ford');
+INSERT INTO quotes(quote, author) VALUES ('Success is going from failure to failure without loss of enthusiasm.', 'Winston Churchill');
+INSERT INTO quotes(quote, author) VALUES ('No one heals himself by wounding another.', 'St. Ambrose');
+INSERT INTO quotes(quote, author) VALUES ('Love is when the other person''s happiness is more important than your own.', 'H. Jackson Brown, Jr.');
+INSERT INTO quotes(quote, author) VALUES ('Authors write books for one, and only one, reason: because we like to torture people.', 'Brandon Sanderson');
+INSERT INTO quotes(quote, author) VALUES ('He who controls the past controls the future. He who controls the present controls the past.', 'George Orwell');
+INSERT INTO quotes(quote, author) VALUES ('You are the universe expressing itself as a human for a little while.', 'Eckhart Tolle');
+
+INSERT INTO quotes(quote, author) VALUES ('We have to do more than just elect a new President if we truly want to change this country.', 'Dan Quayle');
+INSERT INTO quotes(quote, author) VALUES ('The first thing to know about the supernatural is that it never appears when it will be incredibly well documented.', 'Max Post');
+INSERT INTO quotes(quote, author) VALUES ('A man of courage never wants weapons.', 'Thomas Fuller');
 
 
 
@@ -808,7 +868,7 @@ INSERT INTO quotes(quote, author) VALUES ('I do not judge the universe.', 'Dalai
 INSERT INTO quotes(quote, author) VALUES ('Happiness is not something ready made. It comes from your own actions.', 'Dalai Lama');
 
 
---aforismeja
+--proverbs
 INSERT INTO quotes(quote, author) VALUES ('Never attribute to malice that which is adequately explained by stupidity.', 'Hanlon''s Razor');
 INSERT INTO quotes(quote, author) VALUES ('The apple doesn''t fall far from the tree.', 'proverb');
 INSERT INTO quotes(quote, author) VALUES ('The pen is mightier than the sword.', 'proverb');
@@ -836,7 +896,7 @@ INSERT INTO quotes(quote, author) VALUES ('You can''t teach an old dog new trick
 INSERT INTO quotes(quote, author) VALUES ('Love is sweet torment.', 'English proverb');
 
 
---luonnonlakeja
+--natural laws
 INSERT INTO quotes(quote, author) VALUES ('Every object in a state of uniform motion tends to remain in that state of motion unless an external force is applied to it.', 'Newton''s I law');
 INSERT INTO quotes(quote, author) VALUES ('The vector sum of the external forces on an object is equal to the product of mass and the acceleration vector of the object.', 'Newton''s II law');
 INSERT INTO quotes(quote, author) VALUES ('For every action there is an equal and opposite reaction.', 'Newton''s III law');
@@ -874,7 +934,7 @@ INSERT INTO quotes(quote, author) VALUES ('In a hierarchy, every employee tends 
 INSERT INTO quotes(quote, author) VALUES ('The ratio of a circle''s circumference to its diameter', 'pi');
 
 
---kirjoja
+--books
 INSERT INTO quotes(quote, author) VALUES ('It was the best of times, it was the worst of times.', 'Charles Dickens, A Tale of Two Cities');
 INSERT INTO quotes(quote, author) VALUES ('Someone must have slandered Josef K., for one morning, without having done anything truly wrong, he was arrested', 'Franz Kafka, The Trial');
 INSERT INTO quotes(quote, author) VALUES ('All of this happened, more or less.', 'Kurt Vonnegut, Slaughterhouse-Five');
@@ -884,13 +944,13 @@ INSERT INTO quotes(quote, author) VALUES ('All happy families are alike; each un
 INSERT INTO quotes(quote, author) VALUES ('All children, except one, grow up.', 'J.M. Barrie, Peter Pan');
 INSERT INTO quotes(quote, author) VALUES ('The schoolmaster was leaving the village, and everybody seemed sorry.', 'Thomas Hardy, Jude the Obscure');
 INSERT INTO quotes(quote, author) VALUES ('There was no possibility of taking a walk that day.', 'Charlotte Bronte, Jane Eyre');
---INSERT INTO quotes(quote, author) VALUES ('He was an old man who fished alone in a skiff in the Gulf Stream and he had gone eighty-four days now without taking a fish.', 'Ernest Hemingway, The Old Man And The Sea');
+--INSERT INTO quotes(quote, author) VALUES ('He was an old man who fished alone in a skiff in the Gulf Stream and he had gone 84 days now without taking a fish.', 'Ernest Hemingway, The Old Man And The Sea');
 
 INSERT INTO quotes(quote, author) VALUES ('It''s funny. Don''t ever tell anybody anything. If you do, you start missing everybody.', 'J.D. Salinger, The Cather in the Rye.');
 INSERT INTO quotes(quote, author) VALUES ('We are what we pretend to be, so we must be very careful what we pretend to be', 'Kurt Vonnegut, Mother Night');
 
 
---runoja
+--poems
 INSERT INTO quotes(quote, author) VALUES ('Roses are red, violets are blue. Sugar is sweet, and so are you.', 'Poem' );
 INSERT INTO quotes(quote, author) VALUES ('Twinkle, twinkle, little star, how I wonder what you are! Up above the world so high, like a diamond in the sky.', 'Poem');
 INSERT INTO quotes(quote, author) VALUES ('Now I know my ABCs. Next time won''t you sing with me? ', 'Alphabet Song');
@@ -934,7 +994,7 @@ INSERT INTO quotes(quote, author) VALUES ('I feel the need — the need for spee
 INSERT INTO quotes(quote, author) VALUES ('I''m the king of the world!', 'Jack Dawson, Titanic');
 
 
---muita elokuvia
+--movies
 INSERT INTO quotes(quote, author) VALUES ('They may take our lives, but they''ll never take... OUR FREEDOM!', 'William wallace, Braveheart' );
 INSERT INTO quotes(quote, author) VALUES ('Why so serious?', 'The Joker, The Dark Knight' );
 INSERT INTO quotes(quote, author) VALUES ('Get off my plane!', 'President James Marshall, Air Force One' );
@@ -961,7 +1021,7 @@ INSERT INTO quotes(quote, author) VALUES ('I just want to tell you both good luc
 INSERT INTO quotes(quote, author) VALUES ('You shall not pass!', 'Gandalf, The Fellowship of the Ring');
 
 
---taglineja
+--taglines
 INSERT INTO quotes(quote, author) VALUES ('In space no one can hear you scream.', 'Alien tagline' );
 INSERT INTO quotes(quote, author) VALUES ('Earth. It was fun while it lasted.', 'Armageddon tagline' );
 INSERT INTO quotes(quote, author) VALUES ('The true story of a real fake.', 'Catch Me If You Can tagline' );
@@ -984,7 +1044,7 @@ INSERT INTO quotes(quote, author) VALUES ('On every street in every city, there'
 INSERT INTO quotes(quote, author) VALUES ('We had 20 years to prepare. So did they.', 'Independence Day: Resurgence tagline' );
 
 
---presidenttikampanjoita
+--presidential campaign slogans
 INSERT INTO quotes(quote, author) VALUES ('I Like Ike', 'Dwight D. Eisenhower presidential campaign -52' );
 INSERT INTO quotes(quote, author) VALUES ('He''s Making Us Proud Again', 'Gerald Ford presidential campaign -76' );
 INSERT INTO quotes(quote, author) VALUES ('It''s Morning Again in America', 'Ronald Reagan presidential campaign -84' );
@@ -997,7 +1057,7 @@ INSERT INTO quotes(quote, author) VALUES ('Change We Can Believe In', 'Barack Ob
 INSERT INTO quotes(quote, author) VALUES ('Yes We Can!', 'Barack Obama presidential campaign -08' );
 
 
---yrityssloganeja
+--company slogans
 INSERT INTO quotes(quote, author) VALUES ('Think big.', 'Imax' );
 INSERT INTO quotes(quote, author) VALUES ('Think different.', 'Apple' );
 INSERT INTO quotes(quote, author) VALUES ('Between love and madness lies obsession.', 'Calvin Klein' );
@@ -1029,7 +1089,8 @@ INSERT INTO quotes(quote, author) VALUES ('All the news that''s fit to print.', 
 INSERT INTO quotes(quote, author) VALUES ('Where''s the beef?', 'Wendy''s' );
 
 
---pelejä
+
+--games
 INSERT INTO quotes(quote, author) VALUES ('Thank you Mario! But our princess is in another castle!', 'Toad, Super Mario Bros.' );
 INSERT INTO quotes(quote, author) VALUES ('The right man in the wrong place can make all the difference in the world.', 'G-Man, Half-Life 2' );
 INSERT INTO quotes(quote, author) VALUES ('Why, that''s the second biggest monkey head I''ve ever seen!','Guybrush Threepwood, The Secret of Monkey Island' );
@@ -1166,7 +1227,7 @@ INSERT INTO quotes(quote, author) VALUES ('The day of small nations has long pas
 INSERT INTO quotes(quote, author) VALUES ('The future is not what it used to be.', 'Yogi Berra');
 
 
---faktoja
+--facts
 --http://www.thefactsite.com/2011/07/top-100-random-funny-facts.html
 --http://www.cs.cmu.edu/~bingbin/
 --https://www.reddit.com/r/funfacts/
@@ -1262,11 +1323,13 @@ INSERT INTO quotes(quote, author) VALUES ('People with Cotard Syndrome believe t
 INSERT INTO quotes(quote, author) VALUES ('Snakes kill 100,000 people every year.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('It is estimated that 1% of society are psychopaths.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('There are more guns than people in the United States.', 'fact');
-INSERT INTO quotes(quote, author) VALUES ('Bananas Are Radioactive', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('Bananas Are Radioactive.', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('The bubbles in champagne are, essentially, yeast farts.', 'fact');
 
 
 
---lyriikat
+
+--lyrics
 INSERT INTO quotes(quote, author) VALUES ('In the end, the love you take is equal to the love you make.', 'The Beatles');
 INSERT INTO quotes(quote, author) VALUES ('All you need is love.', 'The Beatles');
 
@@ -1275,11 +1338,11 @@ INSERT INTO quotes(quote, author) VALUES ('All you need is love.', 'The Beatles'
 
 
 
--- lyriikat
--- ensimmäisen rivin status-sarake kertoo seuraavan luettavan rivin indeksin.
--- statuskoodit: 1 -- viimeinen rivi
---				 2 -- edellinen kappale käsitelty loppuun, odota kappaleen vaihtoa
---				 3 -- Vaihda kappale
+-- The lyrics table.
+-- The status column in the first row denotes the next line to read next.
+-- statuscodes: 1 -- this is the last line of this song
+--				 2 -- the previous song has been finished, wait for song change
+--				 3 -- OK to change the song
 DROP TABLE IF EXISTS lyrics;
 CREATE TABLE lyrics (title TEXT, search TEXT, verse TEXT, status INTEGER);
 
@@ -1371,7 +1434,7 @@ INSERT INTO lyrics(verse) VALUES ('Now is better than never.' );
 INSERT INTO lyrics(verse) VALUES ('Although never is often better than right now.' );
 INSERT INTO lyrics(verse) VALUES ('If the implementation is hard to explain, it''s a bad idea.' );
 INSERT INTO lyrics(verse) VALUES ('If the implementation is easy to explain, it may be a good idea.' );
-INSERT INTO lyrics(verse, status) VALUES ('Namespaces are one honking great idea -- let''s do more of those!', 1 );
+INSERT INTO lyrics(verse, status) VALUES ('Namespaces are one honking great idea - let''s do more of those!', 1 );
 
 --Nights in white satin
 INSERT INTO lyrics(title, search, verse) VALUES ('Moody Blues - Nights in White Satin', 'Nights in White Satin', 'Nights in white satin');

@@ -5,6 +5,12 @@
 A library module for general access points to quotes.db.
 
 changelog
+6.1 2017
+  * Added build_dictionary() which reads a pre tagged corpus from the nltk module
+    and inserts valid (word, tag) pairs to the database. The option to parse
+    quotes for the dictionary is now somewhat redundant, maybe remove in the future?
+  * Minor error handling changes in parse_for_dictionary() to reflect change that
+    (word, tag) pairs in the dictionary table are now unique.
 4.1.2017
   * Added error handling to update_db() when multiples of the same quote is encoutered.
 26.7.2016
@@ -21,17 +27,18 @@ import sqlite3 as lite
 
 
 
-path = "/home/pi/python/quotes/"
+path = "./"
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
-CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
+CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
 
 def update_db(quick=False):
 	"""Execute the contents of quotes.sql to update the database.
 	This function drops and refills the quotes and lyrics tables.
 	See quotes.sql for DROP TABLE commands.
-	This does not touch the dictionary table.
+	By default, inserted quotes are also parsed for the dictionary.
+	No data is dropped from the dictionary.
 	Arg:
 		quick (boolean): whether to parse quotes and lyrics for dictionary
 	"""
@@ -56,7 +63,7 @@ def update_db(quick=False):
 			for q in multiples:
 				print q
 
-	# check whether to parse quotes and lyrics for dictionary
+	# Check whether to parse quotes and lyrics for the dictionary.
 	if not quick:
 		print "Updating dictionary..."
 		cur.execute("SELECT quote FROM quotes")
@@ -64,7 +71,7 @@ def update_db(quick=False):
 		for row in rows:
 			parse_for_dictionary(row[0])
 
-	# finally, show info on database size
+	# Finally, show info on database size.
 	database_size()
 	print "Run 'python quote.py --tags' to see description of all tags"
 
@@ -75,15 +82,15 @@ def parse_for_dictionary(s, verbose=False):
 		s (string): the string to parse
 		verbose (boolean): whether to show which words were rejected as punctuation
 	Return:
-		list of words of s rejected from the dictionary
+		list of words rejected from the dictionary
 	"""
 	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
-	# replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's] 
+	# Replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's].
 	tokens = normalize_tokens(nltk.word_tokenize(s))
 
-	# define characters for words that should be discluded if detected,
+	# Define characters for words that should be discluded if detected,
 	# these may not have a valid nltk pos_tag anyway.
 	invalid_tokens = [
 		"'",
@@ -94,7 +101,7 @@ def parse_for_dictionary(s, verbose=False):
 		"'"
 	]
 
-	# find valid tokens of length > 1
+	# Find valid tokens of length > 1.
 	valid = [ token for token in tokens if (not any([item in token for item in invalid_tokens]) and len(token) > 1) ]
 	tagged = nltk.pos_tag([word.lower() for word in valid])
 
@@ -103,20 +110,51 @@ def parse_for_dictionary(s, verbose=False):
 		print s
 
 	rejected = [word for word in tokens if word not in valid]
-	# store in database
+
+	# Store in database.
 	with con:
 		for word, tag in tagged:
 			if tag in CLASSES:
-				cur.execute("SELECT * FROM dictionary WHERE word = ? AND class = ?", (word, tag))
-				row = cur.fetchone()
-				if row is None:		# word, tag pair is not yet in dictionary -> add it
+				try:  # the (word, tag) needs to be unique
 					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
+				except lite.IntegrityError as e:
+					print e
+					rejected.append(word)
 
 	if verbose:
 		print rejected
 
 	return rejected
 
+
+def build_dictionary():
+	"""Builds the dictionary table by reading the tagged data from Brown corpus from the nltk module
+	and inserts that data to the database. This corpus has a total of ~ 1.1 million (word, tag) pairs
+	with ~ 44 000 valid pairs to enter in the database.
+	"""
+	con = lite.connect(path+"quotes.db")
+	cur = con.cursor()
+
+	print "Building a dictionary from an internal dataset. This may take a while..."
+	tagged = nltk.corpus.brown.tagged_words()
+	# Strip multiples and words with invalid tags,
+	# it's sligthly faster to first remove multiples and then invalid tags.
+	tagged = set(tagged)
+	tagged = [token for token in tagged if token[1] in CLASSES]
+	
+	print "Inserting " + str(len(tagged)) + " items to the database."
+	with con:
+		for word, tag in tagged:
+			if tag in CLASSES:
+				try:
+					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
+				except lite.IntegrityError as e:
+					pass
+
+
+####################
+# Helper functions #
+####################
 
 def database_size():
 	"""Print information on the size of the database.
@@ -155,7 +193,7 @@ def normalize_tokens(tokens):
 				tokens[idx-1] += tokens[idx]
 				tokens[idx] = "DEL"
 
-		# the first token contained "'". This shouldn't occur anyway
+		# The first token contained "'". This shouldn't occur anyway.
 		except IndexError as e:
 			print e
 

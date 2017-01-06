@@ -29,6 +29,9 @@ Requires:
 	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens  				
 
 Change log:
+6.1.2017
+  * (word, tag) pairs in the dictionary table are now also UNIQUE. (again,
+    this would have simplified things from the start...)
 28.12.2016
   * Made the quote column in the database UNIQUE, this should have probably
     been there from the start. Also removed the, now redundant, redundancy check.
@@ -83,13 +86,9 @@ import dbaccess
 # set connection to the database as a global variable to prevent nested function calls
 # from re-creating these.
 # TODO: maybe change to a class?
-path = "/home/pi/python/quotes/"
+path = "./"
 con = lite.connect(path+"quotes.db")
 cur = con.cursor()
-
-# Applicable nltk word classes for switching word.
-# Run this script with --tags switch to see descriptipns of all tags.
-CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
 
 #==============================================================================
 # Database functions #
@@ -211,7 +210,7 @@ def switch(string):
 
 	# get tuples of (idx, word, tag) of valid tokens in tagged
 	valid = [ (idx, item[0], item[1]) for idx, item in enumerate(tagged)
-		if not any(token in item[0] for token in invalid_tokens) and item[1] in CLASSES ]
+		if not any(token in item[0] for token in invalid_tokens) and item[1] in dbaccess.CLASSES ]
 
 	# determine the number of switches to make based on number of valid words detected
 	if not valid:
@@ -361,12 +360,12 @@ def main():
 		ans = raw_input("The database quotes.db does not exist. Create a new one? (y/N)\n")
 		if ans == "y":
 			with con:
-				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT)")
+				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")  # the pair (word, class) should be UNIQUE
 			dbaccess.update_db()
+			dbaccess.build_dictionary()
 			print "usage:"
 			parser.print_help()
 			sys.exit()
-
 
 	if args.size:
 		dbaccess.database_size()
@@ -389,7 +388,8 @@ def main():
 		if mode == "quick":
 			quick = True
 		if mode == "full":
-			ans = raw_input("This will drop all data from the dictionary! Continue? (y/N)\n")
+			ans = raw_input("The database will be parsed for new words in the dictionary.\
+			This may take some time, continue? (y/N)\n")
 			if ans != "y":
 				print "Exiting."
 				sys.exit()

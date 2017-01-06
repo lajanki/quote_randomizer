@@ -36,31 +36,26 @@ When run without any command line arguments the script generates a randomized qu
 Command line arguments:
 
 ```
---rebuild-database [mode]
-Rebuilds the database by executing quotes.sql. If mode is set to 'quick' the dictionary is not modified, otherwise inserted quotes are also parsed for the dictionary 
-
---song
-Randomizes the next song lyric from the database or nothing if the current song is finished. To advance to the next song generate at least one regular quote.
-
---tags
- Shows info on all tags used to classicy words.
-
---size
- Shows the size of the databse.
-
---bot mode
-If mode is set to 'quote', generates either a randomized quote or a fact and posts it to Twitter. If mode is 'song', processes the next song lyric from the current song and posts to Twitter.
-
---fact
-Generate a randomized fact to print it on screen.
-
---init-song
-Changes the status codes for the lyrics table back to initial values.
-
---set-song song
-Sets the given song to be the next one read by the --song switch. See the 'search' column of the lyrics table for valid names.
+  --size                Shows the size of the databse.
+  --tags                Shows info on all tags used to categorize words into
+                        classes.
+  --rebuild-database [mode]
+                        Rebuilds the entire database by executing quotes.sql.
+                        If mode is set to 'quick' the dictionary is not modified,
+                        otherwise inserted quotes are also parsed for the dictionary.
+  --song                Generates the next song lyric from the database or
+                        nothing if the current song is finished. To start the
+                        next song generate at least one regular quote.
+  --init-song           Changes the status codes for the lyrics table back to
+                        initial values.
+  --set-song song       Sets the given song to be the next one read by the '--
+                        song' switch. See the search column of the lyrics
+                        table for valid names.
+  --bot mode            Generates a quote or a song lyric and posts it to
+                        Twitter. Requires access tokens and API keys from
+                        Twitter.
+  --fact                Generate a randomized fact.
 ```
-
 
 
 ## File structure
