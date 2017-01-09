@@ -5,6 +5,10 @@
 A library module for general access points to quotes.db.
 
 changelog
+9.1.2017
+  * Minor tweaks to what's considered valid words to insert into the dictionary table:
+  	the only non-alphanumeric character allowed is "-". This prevents stuff like $21
+  	from being inserted. Also removed such words from the database.
 6.1 2017
   * Added build_dictionary() which reads a pre tagged corpus from the nltk module
     and inserts valid (word, tag) pairs to the database. The option to parse
@@ -76,13 +80,10 @@ def update_db(quick=False):
 	print "Run 'python quote.py --tags' to see description of all tags"
 
 
-def parse_for_dictionary(s, verbose=False):
+def parse_for_dictionary(s):
 	"""Parse given string for database dictionary. Exclude words already in the dictionary.
 	Args:
 		s (string): the string to parse
-		verbose (boolean): whether to show which words were rejected as punctuation
-	Return:
-		list of words rejected from the dictionary
 	"""
 	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
@@ -90,26 +91,16 @@ def parse_for_dictionary(s, verbose=False):
 	# Replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's].
 	tokens = normalize_tokens(nltk.word_tokenize(s))
 
-	# Define characters for words that should be discluded if detected,
-	# these may not have a valid nltk pos_tag anyway.
-	invalid_tokens = [
-		"'",
-		"http",
-		"@",
-		"//",
-		"#",
-		"'"
-	]
+	# Valid tokens to insert to the database:
+	#	1) may contain "-", otherwise alphanumeric
+	# 	2) len > 3
+	# Note: stripping words happen after tagging to ensure the correct tag is used.
+	tagged = nltk.pos_tag([word.lower() for word in tokens])
+	tagged = [token for token in tagged if (token[0].replace("-", "").isalnum() and len(token[0]) > 3) ]
 
-	# Find valid tokens of length > 1.
-	valid = [ token for token in tokens if (not any([item in token for item in invalid_tokens]) and len(token) > 1) ]
-	tagged = nltk.pos_tag([word.lower() for word in valid])
-
-	if not valid:
-		print "No valid tags:"
+	if not tagged:
+		print "No valid tags in:"
 		print s
-
-	rejected = [word for word in tokens if word not in valid]
 
 	# Store in database.
 	with con:
@@ -119,28 +110,22 @@ def parse_for_dictionary(s, verbose=False):
 					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
 				except lite.IntegrityError as e:
 					print e
-					rejected.append(word)
-
-	if verbose:
-		print rejected
-
-	return rejected
 
 
 def build_dictionary():
 	"""Builds the dictionary table by reading the tagged data from Brown corpus from the nltk module
 	and inserts that data to the database. This corpus has a total of ~ 1.1 million (word, tag) pairs
-	with ~ 44 000 valid pairs to enter in the database.
+	with ~ 42 000 valid pairs to enter in the database.
 	"""
 	con = lite.connect(path+"quotes.db")
 	cur = con.cursor()
 
 	print "Building a dictionary from an internal dataset. This may take a while..."
 	tagged = nltk.corpus.brown.tagged_words()
-	# Strip multiples and words with invalid tags,
-	# it's sligthly faster to first remove multiples and then invalid tags.
+	# Strip multiples and words with invalid tags and characters.
+	# It's sligthly faster to first remove multiples and then remove invalid.
 	tagged = set(tagged)
-	tagged = [token for token in tagged if token[1] in CLASSES]
+	tagged = [token for token in tagged if ( token[1] in CLASSES and token[0].replace("-", "").isalnum() and len(token[0]) > 3 )]
 	
 	print "Inserting " + str(len(tagged)) + " items to the database."
 	with con:
@@ -199,3 +184,4 @@ def normalize_tokens(tokens):
 
 	normalized = [token for token in tokens if token != "DEL"]
 	return normalized
+
