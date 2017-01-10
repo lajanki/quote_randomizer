@@ -39,10 +39,11 @@ Command line arguments:
   --size                Shows the size of the databse.
   --tags                Shows info on all tags used to categorize words into
                         classes.
-  --rebuild-database [mode]
-                        Rebuilds the entire database by executing quotes.sql.
-                        If mode is set to 'quick' the dictionary is not modified,
-                        otherwise inserted quotes are also parsed for the dictionary.
+  --update-database [mode]
+                        Fills the database by executing quotes.sql. If no mode
+                        is set, the quotes and lyrics tables are parsed for
+                        new words to add to the dictionary. If mode is set to
+                        'quick' the dictionary is not modified.
   --song                Generates the next song lyric from the database or
                         nothing if the current song is finished. To start the
                         next song generate at least one regular quote.
@@ -55,6 +56,7 @@ Command line arguments:
                         Twitter. Requires access tokens and API keys from
                         Twitter.
   --fact                Generate a randomized fact.
+
 ```
 
 
