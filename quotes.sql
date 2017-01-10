@@ -6,7 +6,6 @@
 --http://www.cs.virginia.edu/~robins/quotes.html
 --http://www.quotery.com/lists/top-500-greatest-quotes-of-all-time/
 --http://www.inc.com/lolly-daskal/100-motivational-quotes-that-will-inspire-you-to-succeed.html
---http://www.forbes.com/sites/kevinkruse/2013/05/28/inspirational-quotes/
 --http://www.notable-quotes.com/
 --https://www.spec2000.net/06-basicphysics.htm
 --http://www.quotegarden.com/
@@ -16,8 +15,8 @@
 --https://www.reddit.com/r/quotes/
 
 
-DROP TABLE IF EXISTS quotes;
-CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0);
+--DROP TABLE IF EXISTS quotes;  --data is no longer DROPPED!
+--CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0);
 
 
 INSERT INTO quotes(quote, author) VALUES ('Strive not to be a success, but rather to be of value.', 'Albert Einstein');
@@ -795,7 +794,6 @@ INSERT INTO quotes(quote, author) VALUES ('You are the universe expressing itsel
 INSERT INTO quotes(quote, author) VALUES ('We have to do more than just elect a new President if we truly want to change this country.', 'Dan Quayle');
 INSERT INTO quotes(quote, author) VALUES ('The first thing to know about the supernatural is that it never appears when it will be incredibly well documented.', 'Max Post');
 INSERT INTO quotes(quote, author) VALUES ('A man of courage never wants weapons.', 'Thomas Fuller');
-
 
 
 

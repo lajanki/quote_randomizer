@@ -5,6 +5,10 @@
 A library module for general access points to quotes.db.
 
 changelog
+10.1.2017
+  * Changed the way quotes.sql is executed: no more DROP TABLE followed by CREATE TABLE.
+  	when new data is inserted. This keeps the frequency data intact. The lyrics table remains unchanged.
+  * Finding suplicates within quotes.sql is now handled by parsing it as a text file.
 9.1.2017
   * Minor tweaks to what's considered valid words to insert into the dictionary table:
   	the only non-alphanumeric character allowed is "-". This prevents stuff like $21
@@ -51,21 +55,21 @@ def update_db(quick=False):
 
 	with con:
 		print "Executing quotes.sql, please wait..."
-		multiples = []
 		with open(path+"quotes.sql") as f:
 			lines = [line.rstrip("\n;").lstrip("\t") for line in f]
 			for sql in lines:
+				# quotes column is UNIQUE. Skip duplicate lines.
 				try:
 					cur.execute(sql)
 				except (lite.Warning, lite.IntegrityError) as e:
-					print e
-					multiples.append(sql)
+					continue
 
-		print "Done"
-		if multiples:
-			print "An error occured when processing the following quotes and they were skipped:"
-			for q in multiples:
-				print q
+	dupes = find_duplicates()
+	print "Done"
+	if dupes:
+		print "The following duplicates were detected in quotes.sql:"
+		print dupes
+
 
 	# Check whether to parse quotes and lyrics for the dictionary.
 	if not quick:
@@ -77,7 +81,7 @@ def update_db(quick=False):
 
 	# Finally, show info on database size.
 	database_size()
-	print "Run 'python quote.py --tags' to see description of all tags"
+	print "Run 'python quote.py --tags' to see description of all tags."
 
 
 def parse_for_dictionary(s):
@@ -161,6 +165,37 @@ def database_size():
 			cur.execute("SELECT COUNT(word) FROM dictionary WHERE class = ?", (item,))
 			size = cur.fetchone()
 			print item, size[0]
+
+
+def find_duplicates():
+	"""Find duplicates in quotes.sql. Extracts the part after VALUES (' and before ');
+	to get the actual quote.
+	Return:
+		a list of duplicate quotes detected.
+	"""
+	uniques = [];
+	dupes = [];
+	with open(path+"quotes.sql") as f:
+		for line in f:
+			if "INSERT INTO lyrics" in line:  # break when the lyrics table data is encoutered
+				break
+			if line == "\n" or line.startswith("--"):  # skip empty lines and comments
+				continue
+
+			# Strip the sql from the beginning and the end.
+			line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "("!) to the beginning...
+			line = line.lstrip("'")  #...this way no actual quote characters are removed (not that this really matters, though).
+			line = line.rstrip("');\n")
+			# Split by ', to get the quote from the (quote, author pair)
+			quote = line.split("',")[0]
+
+			# Check if this quote has already been seen
+			if quote in uniques:
+				dupes.append(quote)
+			else:
+				uniques.append(quote)
+
+	return dupes
 
 
 def normalize_tokens(tokens):

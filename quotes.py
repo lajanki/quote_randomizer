@@ -28,7 +28,14 @@ Requires:
 	* The Twitter bot feature requires access tokens and keys from Twitter
 	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens  				
 
+
 Change log:
+10.1.2017
+  * Minor changes to reflect database table creation changes in quotes.sql:
+    rather than DROPPING and CREATING the quotes table when ever quotes.sql is
+    executed, all dictionary tables are now created by this script if it detects
+  	the database doesn't exist.
+  * Renamed --rebuild-database to --update-database to better reflect the above changes.
 6.1.2017
   * (word, tag) pairs in the dictionary table are now also UNIQUE. (again,
     this would have simplified things from the start...)
@@ -340,8 +347,8 @@ def main():
 	parser = argparse.ArgumentParser(description="A quote randomizer.")
 	parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
 	parser.add_argument("--tags", help="Shows info on all tags used to categorize words into classes.", action="store_true")
-	parser.add_argument("--rebuild-database", nargs="?", metavar="mode", const="full", help="""Rebuilds the entire database by executing quotes.sql.
-		Drops all previous data from quotes and lyrics but does not modify the dictionary. If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary.
+	parser.add_argument("--update-database", nargs="?", metavar="mode", const="full", help="""Fills the database by executing quotes.sql.
+		If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary.
 		If mode is set to 'quick' the dictionary is not modified.""")
 	parser.add_argument("--song", help="Generates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.", action="store_true")
 	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
@@ -360,7 +367,10 @@ def main():
 		ans = raw_input("The database quotes.db does not exist. Create a new one? (y/N)\n")
 		if ans == "y":
 			with con:
-				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")  # the pair (word, class) should be UNIQUE
+				# Create the three tables.
+				cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0)")
+				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")
+				cur.execute("CREATE TABLE lyrics (title TEXT, search TEXT, verse TEXT, status INTEGER)")
 			dbaccess.update_db()
 			dbaccess.build_dictionary()
 			print "usage:"
@@ -374,12 +384,12 @@ def main():
 		nltk.help.upenn_tagset()
 
 	######################
-	# --rebuild-database #
+	# --update-database #
 	######################
 	# If no optional parameter was provided, also recreate the dictionary.
-	elif args.rebuild_database:
+	elif args.update_database:
 		quick = False
-		mode = args.rebuild_database # check for optional parameter, if none default to 'full'
+		mode = args.update_database # check for optional parameter, if none default to 'full'
 
 		if mode not in ["full", "quick"]:
 			print "Error: invalid mode, please use either 'full' (default) or 'quick'."
