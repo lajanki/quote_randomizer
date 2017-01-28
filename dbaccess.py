@@ -35,7 +35,7 @@ import sqlite3 as lite
 
 
 
-path = "/home/pi/python/quotes/"
+path = "./"
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
