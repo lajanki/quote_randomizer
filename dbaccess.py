@@ -35,11 +35,11 @@ import sqlite3 as lite
 
 
 
-path = "./"
+path = "/home/pi/python/quotes/"
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
-CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
+CLASSES = ("JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ")
 
 def update_db(quick=False):
 	"""Execute the contents of quotes.sql to update the database.
@@ -62,7 +62,7 @@ def update_db(quick=False):
 				try:
 					cur.execute(sql)
 				except (lite.Warning, lite.IntegrityError) as e:
-					continue
+					pass
 
 	dupes = find_duplicates()
 	print "Done"
@@ -113,7 +113,7 @@ def parse_for_dictionary(s):
 				try:  # the (word, tag) needs to be unique
 					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
 				except lite.IntegrityError as e:
-					print e
+					pass
 
 
 def build_dictionary():

@@ -90,12 +90,16 @@ import sqlite3 as lite
 import dbaccess
 
 
-# set connection to the database as a global variable to prevent nested function calls
-# from re-creating these.
-# TODO: maybe change to a class?
+# Define database connection once on the global level.
 path = "./"
+# lite.connect() creates an empty quotes.db file if didn't already exist,
+# set a flag to notify main() if the database really needs to be created.
+#	TODO: This is a bit of a hack. Maybe write as a class so there'd be no need
+# 	to set these up here?
+db_exists = os.path.isfile(path+"quotes.db")
 con = lite.connect(path+"quotes.db")
 cur = con.cursor()
+
 
 #==============================================================================
 # Database functions #
@@ -359,15 +363,11 @@ def main():
 	args = parser.parse_args()
 	#print args
 
-	#######################
-	# File initialization #
-	#######################
-	# no database detected -> create it, show usage information and exit
-	if not os.path.isfile(path+"quotes.db"):
+	if not db_exists:
 		ans = raw_input("The database quotes.db does not exist. Create a new one? (y/N)\n")
-		if ans == "y":
+		if ans == "y":			
 			with con:
-				# Create the three tables.
+				# Create the three tables and populate them in update_db() and build_dictionary().
 				cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0)")
 				cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")
 				cur.execute("CREATE TABLE lyrics (title TEXT, search TEXT, verse TEXT, status INTEGER)")
@@ -377,17 +377,11 @@ def main():
 			parser.print_help()
 			sys.exit()
 
-	if args.size:
-		dbaccess.database_size()
-
-	elif args.tags:
-		nltk.help.upenn_tagset()
-
 	######################
 	# --update-database #
 	######################
 	# If no optional parameter was provided, also recreate the dictionary.
-	elif args.update_database:
+	if args.update_database:
 		quick = False
 		mode = args.update_database # check for optional parameter, if none default to 'full'
 
@@ -486,6 +480,15 @@ def main():
 	##########
 	elif args.fact:
 		get_fact()
+
+	########
+	# misc #
+	########
+	if args.size:
+		dbaccess.database_size()
+
+	elif args.tags:
+		nltk.help.upenn_tagset()
 
 	# no command line argument provided -> print a randomized quote or a fact on screen
 	else:
