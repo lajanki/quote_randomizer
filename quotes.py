@@ -30,6 +30,10 @@ Requires:
 
 
 Change log:
+17.3.2017
+  * Bugfixes regarding how percentages are tokenized.
+  * Added some unit tests to ./test.
+  * Refactoring: moved the Twitterbot part to its own module.
 10.1.2017
   * Minor changes to reflect database table creation changes in quotes.sql:
     rather than DROPPING and CREATING the quotes table when ever quotes.sql is
@@ -79,8 +83,6 @@ Change log:
 
 
 import sys
-import twython
-import json
 import argparse
 import nltk
 import random
@@ -189,7 +191,8 @@ def get_fact():
 		cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
 		fact = cur.fetchone()
 		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
-	randomized = randomize(fact)
+
+		return fact
 		
 
 #==============================================================================
@@ -217,9 +220,10 @@ def switch(string):
 		"@",
 		"//",
 		"#",
+		"%"
 	]
 
-	# get tuples of (idx, word, tag) of valid tokens in tagged
+	# format a list of (idx, word, tag) tuples of valid tokens in tagged
 	valid = [ (idx, item[0], item[1]) for idx, item in enumerate(tagged)
 		if not any(token in item[0] for token in invalid_tokens) and item[1] in dbaccess.CLASSES ]
 
@@ -271,8 +275,9 @@ def switch(string):
 		" ?": "?",
 		" :": ":",
 		" ;": ";",
+		" %": "%",
 		"$ ": "$",
-		"@ ": "@",  #for tweets, won't fix emails!
+		"@ ": "@",
 		"# ": "#",
 		"`` ": "\"",
 		"''": "\"",
@@ -296,16 +301,12 @@ def randomize(quote_record):
 	quote = quote_record[0]
 	author = quote_record[1]
 
-	s = switch(quote)["randomized"]
-
-	print s
-	print "--"+author
-	
-	return (s, author)
+	rand = switch(quote)["randomized"]	
+	return (rand, author)
 
 
 def randomize_lyric():
-	"""Fetch a lyric and use switch() to randomize it."""
+	"""Fetch a lyric and randomize it."""
 	lyric_record = get_lyric()
 	title = lyric_record[0]
 	lyric = lyric_record[1]
@@ -326,7 +327,9 @@ def normalize_tokens(tokens):
 	"""nltk.word_tokenize() will tokenize words using ' as an apostrophe into
 	two tokens: eg. "can't" -> ["can", "'t"].
 	This function normalizes tokens by reattaching the parts back together. This will prevent
-	switch() from choosing the prefixes to be switched. Apostrophe words are rejected anyway.
+	switch() from choosing the prefixes to be switched (words with apostrophes would be rejected anyway).
+	Note: words enclosed with apostrophes should not be stitched to the previous one!
+		"You had me at 'hello'." should not be processed to "You had me at'hello'."! 
 	Arg:
 		tokens (list):  a tokenized list of a quote
 	Return:
@@ -357,7 +360,6 @@ def main():
 	parser.add_argument("--song", help="Generates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.", action="store_true")
 	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
 	parser.add_argument("--set-song", metavar="song", help="Sets the given song to be the next one read by the '--song' switch. See the search column of the lyrics table for valid names.")
-	parser.add_argument("--bot", metavar="mode", help="Generates a quote or a song lyric and posts it to Twitter. Requires access tokens and API keys from Twitter.")
 	parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
 
 	args = parser.parse_args()
@@ -377,9 +379,10 @@ def main():
 			parser.print_help()
 			sys.exit()
 
-	######################
+
+	#####################
 	# --update-database #
-	######################
+	#####################
 	# If no optional parameter was provided, also recreate the dictionary.
 	if args.update_database:
 		quick = False
@@ -400,11 +403,13 @@ def main():
 			
 		dbaccess.update_db(quick)
 
+
 	##########
 	# --song #
 	##########
 	elif args.song:
 		randomize_lyric()
+
 
 	###############
 	# --init-song #
@@ -417,6 +422,7 @@ def main():
 			# set the row index back to the first row of the first song
 			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, 1))
 		print "Done"
+
 
 	##############
 	# --set-song #
@@ -434,57 +440,20 @@ def main():
 				cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
 				cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
 
-	#########
-	# --bot #
-	#########
-	# tweet
-	elif args.bot:
-		msg = ""
-		mode = args.bot
-		if mode not in ["quote", "song"]:
-			print "Error: invalid mode, please use either 'quote' or 'song'."
-			sys.exit()
-
-		# format the message of the tweet based on whether the database item was a quote or a fact
-		if mode == "quote":
-			quote = get_quote()
-			randomized_quote = randomize(quote)
-
-			if randomized_quote[1] == "fact":
-				msg = "Random non-fact:\n" + randomized_quote[0]
-			else:
-				msg = randomized_quote[0] + "\n" + "--" + randomized_quote[1]
-
-		else: 	# mode == "song"
-			randomized_lyric = randomize_lyric()
-			title = randomized_lyric[0]
-			lyric = randomized_lyric[1]
-			if title != None:
-				msg = randomized_lyric[0]+'\n'+randomized_lyric[1]
-			else:
-				msg = randomized_lyric[1]
-
-
-		with open(path+"keys.json") as f:
-			data = json.load(f)
-			API_KEY = data["API_KEY"]
-			API_SECRET = data["API_SECRET"]
-			OAUTH_TOKEN = data["OAUTH_TOKEN"]
-			OAUTH_SECRET = data["OAUTH_SECRET"]
-
-		twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
-		twitter.update_status(status=msg)
 
 	##########
 	# --fact #
 	##########
 	elif args.fact:
-		get_fact()
+		fact = get_fact()
+		rand = randomize(fact, "fact")
+		print rand[0] + "\n--" + rand[1]
+
 
 	########
 	# misc #
 	########
-	if args.size:
+	elif args.size:
 		dbaccess.database_size()
 
 	elif args.tags:
@@ -492,8 +461,9 @@ def main():
 
 	# no command line argument provided -> print a randomized quote or a fact on screen
 	else:
-		new = get_quote()
-		randomize(new)		# printing from inside the function
+		quote = get_quote()
+		rand = randomize(new)
+		print rand[0] + "\n--" + rand[1]
 
 
 
