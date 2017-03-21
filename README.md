@@ -22,7 +22,6 @@ dictionary: a table of words parsed from the other tables.
 Python modules:
  * Natural Language Toolkit (nltk)
      http://www.nltk.org/index.html
- * sqlite3
  * Twython:
      https://twython.readthedocs.org/en/latest/
 
@@ -32,7 +31,7 @@ Keys:
 
 ## Usage
 
-When run without any command line arguments the script generates a randomized quote to console window.
+Running ```quotes.py``` without any command line arguments generates a randomized quote to stdout.
 Command line arguments:
 
 ```
@@ -52,22 +51,22 @@ Command line arguments:
   --set-song song       Sets the given song to be the next one read by the '--
                         song' switch. See the search column of the lyrics
                         table for valid names.
-  --bot mode            Generates a quote or a song lyric and posts it to
-                        Twitter. Requires access tokens and API keys from
-                        Twitter.
   --fact                Generate a randomized fact.
-
 ```
+
+Additionally, ```bot.py --tweet quote``` tweets a randomized quote given valid Twitter access keys in ```keys.json```. 
 
 
 ## File structure
 
 * quotes.py
   - The main script.
+* bot.py
+  - Twitterbot
 * dbaccess.py
   - an API to access the database.
 * keys.json
-  - An external file used to store Twitter access tokens and keys. Note that this file is just an empty shell to store your own keys. Only required when running with ```--bot quote``` or ```--bot song```.
+  - An external file used to store Twitter access tokens and keys. The provided file is just an empty shell to store your own keys. Only required when running bot.py.
 * quotes.sql
   - SQL statements to create the database. Updating the database is done by manually updating this file and running the main script with the ```--rebuild-database``` switch.
 * quotes.db
@@ -81,7 +80,13 @@ Command line arguments:
     3. dictionary: a table of words parsed from the other two tables together with a tag identifying each word as a member of a specific word class. Using this tag a suitable word is chosen when randomizing quotes (ie. nouns get replaced by nouns, adjectives by adjectives etc.). The tag is determied by nltk.pos_tag() function.
 
 
+
 #### Changelog
+17.3.2017
+* Added some unit tests and testing data.
+* Moved the bot part to its own module.
+* Minor tokenizing bugfixes.
+
 28.12.2016
 * Made the quote column in the database UNIQUE and removed the related redundancy check.
 * Added a frequency column to the database to indicate the number of times a quote has been picked.
@@ -107,7 +112,7 @@ Command line arguments:
 * changed the argument parser class from optparse to argparse
 
 31.8.2015
-* initial relase
+* initial release
 
 ___
 Written on Python 2.7.8
