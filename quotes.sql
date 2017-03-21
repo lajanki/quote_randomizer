@@ -161,6 +161,7 @@ INSERT INTO quotes(quote, author) VALUES ('It is better to be quotable than to b
 INSERT INTO quotes(quote, author) VALUES ('Never mistake motion for action.', 'Ernest Hemingway'  ); 
 INSERT INTO quotes(quote, author) VALUES ('Learning is what most adults will do for a living in the 21st century.', 'Lewis Perelman');
 INSERT INTO quotes(quote, author) VALUES ('A pessimist sees the difficulty in every opportunity; an optimist sees the opportunity in every difficulty.', 'Winston Churchill');
+INSERT INTO quotes(quote, author) VALUES ('Speak softly, and carry a big stick.', 'Theodore Roosevelt');
 
 INSERT INTO quotes(quote, author) VALUES ('I think there is a world market for maybe five computers.', 'Thomas Watson'); 
 INSERT INTO quotes(quote, author) VALUES ('The only thing necessary for the triumph of evil is for good men to do nothing.', 'Edmund Burke');
@@ -410,12 +411,12 @@ INSERT INTO quotes(quote, author) VALUES ('You may say I''m a dreamer, but I''m 
 INSERT INTO quotes(quote, author) VALUES ('But better to get hurt by the truth than comforted with a lie.', 'Khaled Hosseini' );
 INSERT INTO quotes(quote, author) VALUES ('Not all those who wander are lost.', 'J.R.R. Tolkien' );
 INSERT INTO quotes(quote, author) VALUES ('If there''s a book that you want to read, but it hasn''t been written yet, then you must write it.', 'Toni Morrison' );
-INSERT INTO quotes(quote, author) VALUES ('Never tell the truth to people who are not worthy of it.', 'Mark Twain' );
+INSERT INTO quotes(quote, author) VALUES ('When I started counting my blessings, my whole life turned around.', 'Willie Nelson');
 INSERT INTO quotes(quote, author) VALUES ('Today is the first day of the rest of your life.', 'Charles Dederich' );
 INSERT INTO quotes(quote, author) VALUES ('Knowing yourself is the beginning of all wisdom.', 'Aristotle' );
 INSERT INTO quotes(quote, author) VALUES ('Creativity is knowing how to hide your sources', 'C.E.M. Joad' );
 INSERT INTO quotes(quote, author) VALUES ('I speak to everyone in the same way, whether he is the garbage man or the president of the university.', 'Albert Einstein' );
-INSERT INTO quotes(quote, author) VALUES ('Those who don''t believe in magic will never find it.', 'Roald Dahl' );
+INSERT INTO quotes(quote, author) VALUES ('The secret to getting ahead, is getting started.', 'Mark Twain');
 
 INSERT INTO quotes(quote, author) VALUES ('You show me a capitalist, and I''ll show you a bloodsucker.', 'Malcolm X');
 INSERT INTO quotes(quote, author) VALUES ('The best friend a man has is his dog.', 'George Graham Vest' );
@@ -794,6 +795,57 @@ INSERT INTO quotes(quote, author) VALUES ('You are the universe expressing itsel
 INSERT INTO quotes(quote, author) VALUES ('We have to do more than just elect a new President if we truly want to change this country.', 'Dan Quayle');
 INSERT INTO quotes(quote, author) VALUES ('The first thing to know about the supernatural is that it never appears when it will be incredibly well documented.', 'Max Post');
 INSERT INTO quotes(quote, author) VALUES ('A man of courage never wants weapons.', 'Thomas Fuller');
+INSERT INTO quotes(quote, author) VALUES ('Out of nothing I have created a strange new universe.', 'János Bolyai');
+INSERT INTO quotes(quote, author) VALUES ('If you''re tired of arguing with strangers on the internet, try talking to one in real life.', 'Barack Obama');
+INSERT INTO quotes(quote, author) VALUES ('It is often in the darkest skies that we see the brightest stars.', 'Richard Paul Evans');
+INSERT INTO quotes(quote, author) VALUES ('There are two different types of people in the world, those who want to know, and those who want to believe.', 'Friedrich Nietzsche');
+INSERT INTO quotes(quote, author) VALUES ('Sometimes people don''t want to hear the truth because they don''t want their illusions destroyed.', 'Friedrich Nietzsche');
+INSERT INTO quotes(quote, author) VALUES ('Coming back to where you started is not the same as never leaving.', 'Terry Pratchett');
+INSERT INTO quotes(quote, author) VALUES ('All morons hate it when you call them a moron.', 'Holden Caulfield');
+
+INSERT INTO quotes(quote, author) VALUES ('The truth will set you free. But not until it is finished with you.', 'David Foster Wallace');
+INSERT INTO quotes(quote, author) VALUES ('Inspiration is a guest that does not willingly visit the lazy.', 'Pyotr Tchaikovsky');
+INSERT INTO quotes(quote, author) VALUES ('Never tell the truth to people who are not worthy of it.', 'Mark Twain');
+INSERT INTO quotes(quote, author) VALUES ('Don''t listen to the cynics. They were wrong about my generation and they were wrong about yours.', 'Joe Biden');
+INSERT INTO quotes(quote, author) VALUES ('Only those who dare to fail greatly can ever achieve greatly.', 'Robert Kennedy');
+INSERT INTO quotes(quote, author) VALUES ('We have the marvelous gift of making everything insignificant.', 'Nikolai Gogol');
+INSERT INTO quotes(quote, author) VALUES ('A man paints with his brains and not with his hands.', 'Michelangelo');
+INSERT INTO quotes(quote, author) VALUES ('It is not the mountains ahead to climb that wear you out; it is the pebble in your shoe.', 'Muhammad Ali');
+INSERT INTO quotes(quote, author) VALUES ('Stress can ruin every day of your life, dying can only ruin one.', 'Sherlock Holmes');
+INSERT INTO quotes(quote, author) VALUES ('I love Humanity but I hate humans.', 'Albert Einstein');
+
+INSERT INTO quotes(quote, author) VALUES ('I would rather walk with a friend in the dark, than alone in the light.', 'Helen Keller');
+INSERT INTO quotes(quote, author) VALUES ('Attention is the rarest and purest form of generosity.', 'Simone Weil');
+INSERT INTO quotes(quote, author) VALUES ('Nature is written in mathematical language.', 'Galileo Galilei');
+INSERT INTO quotes(quote, author) VALUES ('You never know what is enough unless you know what is more than enough.', 'William Blake');
+INSERT INTO quotes(quote, author) VALUES ('Men will always be mad, and those who think they can cure them are the maddest of all.', 'Voltaire');
+INSERT INTO quotes(quote, author) VALUES ('Stay committed to your decisions, but stay flexible in your approach.', 'Tom Robbins');
+INSERT INTO quotes(quote, author) VALUES ('The only way to have a friend is to be one.', 'Ralph Waldo Emerson');
+INSERT INTO quotes(quote, author) VALUES ('Damn your principles, stick with your party!', 'Benjamin Disraeli');
+INSERT INTO quotes(quote, author) VALUES ('By acting as if I was not afraid I gradually ceased to be afraid.', 'Theodore Roosevelt');
+INSERT INTO quotes(quote, author) VALUES ('Peace for our time!', 'Neville Chamberlain');
+
+INSERT INTO quotes(quote, author) VALUES ('The trouble with being punctual is that nobody’s there to appreciate it.', 'Franklin P. Jones');
+INSERT INTO quotes(quote, author) VALUES ('If you want to be original Be ready to be copied.', 'Aphos');
+INSERT INTO quotes(quote, author) VALUES ('The present is theirs; the future, for which I really worked, is mine.', 'Nikola Tesla');
+INSERT INTO quotes(quote, author) VALUES ('Those who don''t believe in magic will never find it.', 'Roald Dahl');
+INSERT INTO quotes(quote, author) VALUES ('A patriot must always be ready to defend his country against his government.', 'Edward Abbey');
+INSERT INTO quotes(quote, author) VALUES ('Be yourself; everyone else is already taken.', 'Oscar Wilde');
+INSERT INTO quotes(quote, author) VALUES ('Take the stones people throw at you, and use them to build a monument.', 'Ratan Tata');
+INSERT INTO quotes(quote, author) VALUES ('I think life''s an irrational obsession.',  'Sean Penn');
+INSERT INTO quotes(quote, author) VALUES ('A penny saved is a penny earned.', 'Benjamin Franklin');
+INSERT INTO quotes(quote, author) VALUES ('Violence is the last refuge of the incompetent.', 'Isaac Asimov');
+
+INSERT INTO quotes(quote, author) VALUES ('A really great man is known by three signs: generosity in the design, humanity in the execution, moderation in success.', 'Otto von Bismarck');
+INSERT INTO quotes(quote, author) VALUES ('You are free, and that is why you are lost.', 'Franz Kafka');
+INSERT INTO quotes(quote, author) VALUES ('Everyone has a plan until they get punched in the mouth.', 'Mike Tyson');
+INSERT INTO quotes(quote, author) VALUES ('You can tell how smart people are by what they laugh at.', 'Tina Fey');
+INSERT INTO quotes(quote, author) VALUES ('Alcohol, taken in sufficient quantities, may produce all the effects of drunkenness.', 'Oscal Wilde');
+INSERT INTO quotes(quote, author) VALUES ('Those who can make you believe absurdities, can make you commit atrocities.', 'Voltaire');
+INSERT INTO quotes(quote, author) VALUES ('Family is not an important thing. It''s everything.', 'Michael J. Fox');
+INSERT INTO quotes(quote, author) VALUES ('It is easier to build strong children than to repair broken men.', 'Frederick Douglass');
+INSERT INTO quotes(quote, author) VALUES ('Keep your eyes on the stars, and your feet on the ground.', 'Theodore Roosevel');
+
 
 
 
@@ -976,7 +1028,7 @@ INSERT INTO quotes(quote, author) VALUES ('Keep your friends close, but your ene
 INSERT INTO quotes(quote, author) VALUES ('We rob banks.', 'Clyde Barrow, Bonnie and Clyde');
 INSERT INTO quotes(quote, author) VALUES ('I see dead people.', 'Cole Sear, The Sixth Sense' );
 INSERT INTO quotes(quote, author) VALUES ('Houston, we have a problem.', 'Jim Lovell, Apollo 13' );
-INSERT INTO quotes(quote, author) VALUES ('You had me at ''hello.''', 'Dorothy Boyd, Jerry Maguire');
+INSERT INTO quotes(quote, author) VALUES ('You had me at "hello."', 'Dorothy Boyd, Jerry Maguire');
 INSERT INTO quotes(quote, author) VALUES ('A boy''s best friend is his mother.', 'Norman Bates, Psycho');
 INSERT INTO quotes(quote, author) VALUES ('Greed, for lack of a better word, is good.', 'Gordon Gekko, Wall Street' );
 INSERT INTO quotes(quote, author) VALUES ('As God is my witness, I''ll never be hungry again.', 'Scarlett O''Hara, Gone with the Wind');
@@ -1317,13 +1369,19 @@ INSERT INTO quotes(quote, author) VALUES ('Kissing a baby on the ear can make it
 INSERT INTO quotes(quote, author) VALUES ('Astronauts aboard Apollo 10 heard unexplained "outer spacey" music while orbiting the dark side of the moon.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('Lying flat on your back is your best bet for surviving a falling elevator.', 'fact');
 
-INSERT INTO quotes(quote, author) VALUES ('People with Cotard Syndrome believe they are dead or have lost their internal organs', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('People with Cotard Syndrome believe they are dead or have lost their internal organs.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('Snakes kill 100,000 people every year.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('It is estimated that 1% of society are psychopaths.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('There are more guns than people in the United States.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('Bananas Are Radioactive.', 'fact');
 INSERT INTO quotes(quote, author) VALUES ('The bubbles in champagne are, essentially, yeast farts.', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('There are more hydrogen atoms in a teaspoon of water than there are teaspoons of water in the sea.', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('The word bed actually looks like a bed.', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('All of the planets could fit inbetween the earth and the moon.', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('The were still mammoths roaming the earth by the time the pyramids were being constructed.', 'fact');
 
+INSERT INTO quotes(quote, author) VALUES ('Seahorses are raised by their fathers.', 'fact');
+INSERT INTO quotes(quote, author) VALUES ('Mitochondria is the powerhouse of the cell.', 'fact');
 
 
 
@@ -1338,16 +1396,16 @@ INSERT INTO quotes(quote, author) VALUES ('All you need is love.', 'The Beatles'
 
 -- The lyrics table.
 -- The status column in the first row denotes the next line to read next.
--- statuscodes: 1 -- this is the last line of this song
---				 2 -- the previous song has been finished, wait for song change
---				 3 -- OK to change the song
+-- status: 1 -- first line of a new song
 DROP TABLE IF EXISTS lyrics;
-CREATE TABLE lyrics (title TEXT, search TEXT, verse TEXT, status INTEGER);
+CREATE TABLE lyrics (title TEXT, search TEXT UNIQUE, verse TEXT, status INTEGER);
 
+
+--status row
+INSERT INTO lyrics(status) VALUES (2);
 
 --Californication
-INSERT INTO lyrics(status) VALUES (2);
-INSERT INTO lyrics(title, search, verse) VALUES ('Red Hot Chili Peppers - Californication','Californication', 'Psychic spies from China try to steal your mind''s elation');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('Red Hot Chili Peppers - Californication','Californication', 'Psychic spies from China try to steal your mind''s elation', 1);
 INSERT INTO lyrics(verse) VALUES ('Little girls from Sweden dream of silver screen quotations');
 INSERT INTO lyrics(verse) VALUES ('And if you want these kind of dreams it''s Californication');
 INSERT INTO lyrics(verse) VALUES ('It''s the edge of the world and all of western civilization');
@@ -1370,10 +1428,10 @@ INSERT INTO lyrics(verse) VALUES ('And earthquakes are to a girl''s guitar they'
 
 INSERT INTO lyrics(verse) VALUES ('And tidal waves couldn''t save the world from Californication');
 INSERT INTO lyrics(verse) VALUES ('Pay your surgeon very well to break the spell of aging');
-INSERT INTO lyrics(verse, status) VALUES ('Sicker than the rest there is no test but this is what you''re craving', 1);
+INSERT INTO lyrics(verse) VALUES ('Sicker than the rest there is no test but this is what you''re craving');
 
 --Stairway to Heaven
-INSERT INTO lyrics(title, search, verse) VALUES ('Led Zeppelin - Stairway to Heaven', 'Stairway to Heaven', 'There''s a lady who''s sure all that glitters is gold');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('Led Zeppelin - Stairway to Heaven', 'Stairway to Heaven', 'There''s a lady who''s sure all that glitters is gold', 1);
 INSERT INTO lyrics(verse) VALUES ('And she''s buying a stairway to heaven. When she gets there she knows, if the stores are all closed');
 INSERT INTO lyrics(verse) VALUES ('With a word she can get what she came for. And she''s buying a stairway to heaven.');
 INSERT INTO lyrics(verse) VALUES ('There''s a sign on the wall but she wants to be sure');
@@ -1396,10 +1454,10 @@ INSERT INTO lyrics(verse) VALUES ('There walks a lady we all know who shines whi
 
 INSERT INTO lyrics(verse) VALUES ('How everything still turns to gold. And if you listen very hard');
 INSERT INTO lyrics(verse) VALUES ('The tune will come to you at last. When all are one and one is all');
-INSERT INTO lyrics(verse, status) VALUES ('To be a rock and not to roll. And she''s buying a stairway to heaven.', 1);
+INSERT INTO lyrics(verse) VALUES ('To be a rock and not to roll. And she''s buying a stairway to heaven.');
 
 --How Can I Tell You?
-INSERT INTO lyrics(title, search, verse) VALUES ('Cat Stevens - How Can I Tell You?', 'How Can I Tell You?', 'How can I tell you that I love you, I love you');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('Cat Stevens - How Can I Tell You?', 'How Can I Tell You?', 'How can I tell you that I love you, I love you', 1);
 INSERT INTO lyrics(verse) VALUES ('But I can''t think of right words to say, I long to tell you that I''m always thinking of you');
 INSERT INTO lyrics(verse) VALUES ('I''m always thinking of you, but my words just blow away, just blow away');
 INSERT INTO lyrics(verse) VALUES ('It always ends up to one thing, honey and I can''t think of right words to say');
@@ -1411,10 +1469,10 @@ INSERT INTO lyrics(verse) VALUES ('Feel my arms around you, like a sea around a 
 INSERT INTO lyrics(verse) VALUES ('That I might find you, in hope that I might find you, because heart''s can do no more');
 INSERT INTO lyrics(verse) VALUES ('It always ends up to one thing honey, still I kneel upon the floor how can I tell you that I love you, I love you');
 INSERT INTO lyrics(verse) VALUES ('But I can''t think of right words to say I long to tell you that I''m always thinking of you');
-INSERT INTO lyrics(verse, status) VALUES ('I''m always thinking of you... It always ends up to one thing honey and I can''t think of right words to say', 1);
+INSERT INTO lyrics(verse) VALUES ('I''m always thinking of you... It always ends up to one thing honey and I can''t think of right words to say');
 
 --The Zen of Python
-INSERT INTO lyrics(title, search, verse) VALUES ('The Zen of Python', 'The Zen of Python', 'Beatiful is better than ugly.');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('The Zen of Python', 'The Zen of Python', 'Beatiful is better than ugly.', 1);
 INSERT INTO lyrics(verse) VALUES ('Explicit is better than implicit.');
 INSERT INTO lyrics(verse) VALUES ('Simple is better than complex.' );
 INSERT INTO lyrics(verse) VALUES ('complex is better than complicated.' );
@@ -1432,10 +1490,10 @@ INSERT INTO lyrics(verse) VALUES ('Now is better than never.' );
 INSERT INTO lyrics(verse) VALUES ('Although never is often better than right now.' );
 INSERT INTO lyrics(verse) VALUES ('If the implementation is hard to explain, it''s a bad idea.' );
 INSERT INTO lyrics(verse) VALUES ('If the implementation is easy to explain, it may be a good idea.' );
-INSERT INTO lyrics(verse, status) VALUES ('Namespaces are one honking great idea - let''s do more of those!', 1 );
+INSERT INTO lyrics(verse) VALUES ('Namespaces are one honking great idea - let''s do more of those!');
 
 --Nights in white satin
-INSERT INTO lyrics(title, search, verse) VALUES ('Moody Blues - Nights in White Satin', 'Nights in White Satin', 'Nights in white satin');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('Moody Blues - Nights in White Satin', 'Nights in White Satin', 'Nights in white satin', 1);
 INSERT INTO lyrics(verse) VALUES ('Never reaching the end. Letters I''ve written never meaning to send.');
 INSERT INTO lyrics(verse) VALUES ('Beauty I''ve always missed With these eyes before.' );
 INSERT INTO lyrics(verse) VALUES ('Just what the truth is I can''t say any more.' );
@@ -1448,20 +1506,20 @@ INSERT INTO lyrics(verse) VALUES ('Nights in white satin never reaching the end.
 INSERT INTO lyrics(verse) VALUES ('Letters I''ve written never meaning to send.' );
 INSERT INTO lyrics(verse) VALUES ('Beauty I''ve always missed With these eyes before.');
 INSERT INTO lyrics(verse) VALUES ('Just what the truth is I can''t say any more.' );
-INSERT INTO lyrics(verse, status) VALUES ('Cause I love you, yes I love you. Oh how I love you, oh how I love you.', 1);
+INSERT INTO lyrics(verse) VALUES ('Cause I love you, yes I love you. Oh how I love you, oh how I love you.');
 
 --What a Wonderful World
-INSERT INTO lyrics(title, search, verse) VALUES ('Louis Armstrong - What a Wonderful World', 'What a Wonderful World', 'I see trees of green, red roses too.');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('Louis Armstrong - What a Wonderful World', 'What a Wonderful World', 'I see trees of green, red roses too.', 1);
 INSERT INTO lyrics(verse) VALUES ('I see them bloom for me and you and I think to myself what a wonderful world.' );
 INSERT INTO lyrics(verse) VALUES ('I see skies of blue and clouds of white. The bright blessed day, the dark sacred night.' );
 INSERT INTO lyrics(verse) VALUES ('And I think to myself what a wonderful world.' );
 INSERT INTO lyrics(verse) VALUES ('The colors of the rainbow so pretty in the sky, are also on the faces of people going by.' );
 INSERT INTO lyrics(verse) VALUES ('I see friends shaking hands saying how do you do, but they''re really saying I love you.' );
 INSERT INTO lyrics(verse) VALUES ('I hear baby''s crying and I watched them grow, they''ll learn much more than I''ll ever know.' );
-INSERT INTO lyrics(verse, status) VALUES ('And I think to myself what a wonderful world. Yes, I think to myself what a wonderful world.', 1 );
+INSERT INTO lyrics(verse) VALUES ('And I think to myself what a wonderful world. Yes, I think to myself what a wonderful world.');
 
 --Behind Blue Eyes
-INSERT INTO lyrics(title, search, verse) VALUES ('Limp Bizkit - Behind Blue Eyes', 'Behind Blue Eyes', 'No one knows what it''s like to be the bad man, to be the sad man. Behind blue eyes.');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('Limp Bizkit - Behind Blue Eyes', 'Behind Blue Eyes', 'No one knows what it''s like to be the bad man, to be the sad man. Behind blue eyes.', 1);
 INSERT INTO lyrics(verse) VALUES ('And no one knows what it''s like to be hated, to be fated to telling only lies.' );
 INSERT INTO lyrics(verse) VALUES ('But my dreams they aren''t as empty as my conscience seems to be.' );
 INSERT INTO lyrics(verse) VALUES ('I have hours, only lonely. My love is vengeance that''s never free.' );
@@ -1470,19 +1528,14 @@ INSERT INTO lyrics(verse) VALUES ('No one bites back as hard on their anger.' );
 INSERT INTO lyrics(verse) VALUES ('None of my pain and woe can show through.' );
 INSERT INTO lyrics(verse) VALUES ('No one knows what its like to be mistreated, to be defeated behind blue eyes.' );
 INSERT INTO lyrics(verse) VALUES ('No one knows how to say that they''re sorry and don''t worry. I''m not telling lies.' );
-INSERT INTO lyrics(verse, status) VALUES ('No one knows what its like to be the bad man, to be the sad man. Behind blue eyes.', 1 );
+INSERT INTO lyrics(verse) VALUES ('No one knows what its like to be the bad man, to be the sad man. Behind blue eyes.');
 
 --Yesterday
-INSERT INTO lyrics(title, search, verse) VALUES ('The Beatles - Yesterday', 'Yesterday', 'Yesterday all my troubles seemed so far away.');
+INSERT INTO lyrics(title, search, verse, status) VALUES ('The Beatles - Yesterday', 'Yesterday', 'Yesterday all my troubles seemed so far away.', 1);
 INSERT INTO lyrics(verse) VALUES ('Now it looks as though they''re here to stay. Oh, I believe in yesterday.' );
 INSERT INTO lyrics(verse) VALUES ('Suddenly I''m not half the man I used to be. There''s a shadow hanging over me. Oh, yesterday came suddenly.' );
 INSERT INTO lyrics(verse) VALUES ('Why she had to go, I don''t know, she wouldn''t say. I said something wrong, now I long for yesterday.' );
 INSERT INTO lyrics(verse) VALUES ('Yesterday love was such an easy game to play. Now I need a place to hide away. Oh, I believe in yesterday.' );
 INSERT INTO lyrics(verse) VALUES ('Why she had to go, I don''t know, she wouldn''t say. I said something wrong, now I long for yesterday.' );
 INSERT INTO lyrics(verse) VALUES ('Yesterday love was such an easy game to play.' );
-INSERT INTO lyrics(verse, status) VALUES ('Now I need a place to hide away. Oh, I believe in yesterday.', 1 );
-
-
-
-
-
+INSERT INTO lyrics(verse) VALUES ('Now I need a place to hide away. Oh, I believe in yesterday.');

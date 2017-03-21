@@ -4,7 +4,14 @@
 """
 A library module for general access points to quotes.db.
 
+TODO: Set find_invalid() to also look for errenous use of single quotes,
+  should only be used as an apostrophe.
+TODO: Include lyrics part in find_invalid()
+
 changelog
+21.1.2017
+  * Finding invalid entries from quotes.sql now also looks for (quote, author)-pairs
+    with > 135 characters.
 10.1.2017
   * Changed the way quotes.sql is executed: no more DROP TABLE followed by CREATE TABLE.
   	when new data is inserted. This keeps the frequency data intact. The lyrics table remains unchanged.
@@ -39,7 +46,7 @@ path = "./"
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
-CLASSES = ("JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ")
+CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
 
 def update_db(quick=False):
 	"""Execute the contents of quotes.sql to update the database.
@@ -64,10 +71,17 @@ def update_db(quick=False):
 				except (lite.Warning, lite.IntegrityError) as e:
 					pass
 
-	dupes = find_duplicates()
+	invalid = find_invalid()
+	dupes = invalid["dupes"]
+	long_ = invalid["long"]
 	print "Done"
+
+	if long_:
+		print "Found the following long quotes in quotes.sql:"
+		print long_
+
 	if dupes:
-		print "The following duplicates were detected in quotes.sql:"
+		print "Skipped the following duplicates:"
 		print dupes
 
 
@@ -167,27 +181,32 @@ def database_size():
 			print item, size[0]
 
 
-def find_duplicates():
-	"""Find duplicates in quotes.sql. Extracts the part after VALUES (' and before ');
-	to get the actual quote.
+def find_invalid():
+	"""Find various erroneous entries from the quotes part (lyrics are skipped for now) of quotes.sql:
+	  1 duplicates
+	  2 long (quote, author)-pairs
+	  3 uses of "'" as a quote character, (should only be used as an apostrophe)
+	Note: that finding long quotes is not entirely reliable as quotes.switch() affects quote length.
 	Return:
-		a list of duplicate quotes detected.
+		a dict of lists for each type of invalid entries.
 	"""
-	uniques = [];
-	dupes = [];
+	uniques = []
+	dupes = []
+	long_ = []
+
 	with open(path+"quotes.sql") as f:
 		for line in f:
-			if "INSERT INTO lyrics" in line:  # break when the lyrics table data is encoutered
+			if "DROP TABLE IF EXISTS lyrics" in line:  # break when the lyrics table data is encoutered
 				break
 			if line == "\n" or line.startswith("--"):  # skip empty lines and comments
 				continue
 
 			# Strip the sql from the beginning and the end.
-			line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "("!) to the beginning...
-			line = line.lstrip("'")  #...this way no actual quote characters are removed (not that this really matters, though).
-			line = line.rstrip("');\n")
-			# Split by ', to get the quote from the (quote, author pair)
-			quote = line.split("',")[0]
+			line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "(" !) to the beginning...
+			line = line.lstrip("'")  # remove the single quote separately, this way no actual quote characters are removed
+			line = line.rstrip("');\n" )  # remove sql characters and any whitespace from the end
+			# Split by "'," combination to get the individual items from the (quote, author)-pair 
+			quote, author = line.split("',")
 
 			# Check if this quote has already been seen
 			if quote in uniques:
@@ -195,7 +214,11 @@ def find_duplicates():
 			else:
 				uniques.append(quote)
 
-	return dupes
+			# Is it too long? Note: no separators.
+			if len(quote + author) > 135:
+				long_.append(quote)
+
+	return {"dupes": dupes, "long": long_}
 
 
 def normalize_tokens(tokens):
@@ -219,4 +242,6 @@ def normalize_tokens(tokens):
 
 	normalized = [token for token in tokens if token != "DEL"]
 	return normalized
+
+
 

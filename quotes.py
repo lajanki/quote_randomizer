@@ -26,10 +26,22 @@ Requires:
 	  https://twython.readthedocs.org/en/latest/
   Keys:
 	* The Twitter bot feature requires access tokens and keys from Twitter
-	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens  				
+	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens
+
+
+TODO: a bunch of stuff:
+ * Separate bot status data to allow a standalone version of the song randomizer
+ * Further cleanup old song table mechanics (status column is mostly useless)
+ * write tests for various functions (generating quotes, facts, songs)
+ * check quotes.sql for apostrophe usage and include lyrics part to existing checks
+ * better detection for tags to change (ngrams?)   				
 
 
 Change log:
+21.3.2017
+  * Simplified song processing and moved using it under the bot feature in bot.py.
+  * Moved the default behaviour of generating a quote under --quote switch for
+    easier debugging.
 17.3.2017
   * Bugfixes regarding how percentages are tokenized.
   * Added some unit tests to ./test.
@@ -77,7 +89,7 @@ Change log:
 4.1.2016
   * Changed switch() to work with capitalized words.
 27.10.2015
-  * Initial version
+  * Initial version.
 """
 
 
@@ -94,10 +106,11 @@ import dbaccess
 
 # Define database connection once on the global level.
 path = "./"
-# lite.connect() creates an empty quotes.db file if didn't already exist,
-# set a flag to notify main() if the database really needs to be created.
-#	TODO: This is a bit of a hack. Maybe write as a class so there'd be no need
-# 	to set these up here?
+# lite.connect() creates an empty quotes.db file if it doesn't exist. This
+# throws of the detection in main() later on. set a flag to notify whether
+# the database really needs to be created.
+#	TODO: This is a bit of a hack and reserves a database connection when opened in ipython.
+#	Maybe write as a class so there'd be no need to set these up here?
 db_exists = os.path.isfile(path+"quotes.db")
 con = lite.connect(path+"quotes.db")
 cur = con.cursor()
@@ -120,79 +133,97 @@ def get_quote():
 		rowid = row[0]
 		cur.execute("UPDATE quotes SET frequency=? WHERE rowid=?", (frequency, rowid))
 
-		# update lyrics table's status codes to allow the processing of the next song
-		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
-
 	return (row[1], row[2])
 
 
-def get_lyric():
-	"""Fetch the next lyric to be processed. Return None if current song is finished.
-	The rowid of the next lyric to be processed is stored in the first line of the lyrics table.
+def get_next_lyric():
+	"""Each song in the lyrics table is meant to be processed line-by-line. This functions returns the
+	next line of lyrics to be processed by switch().
+	The rowid of the database row to read is stored in the status (ie. first) line of the lyrics table.
+	Calls sys.exit() if the next line of lyrics is from another song.
 	Return:
-		(title, lyric) tuple of the next lyric to be processed, possible None
+		(title, lyric) tuple of the lyric read from the database. Title is != None only for the
+			first lyric of each song denoting a change of song.
+	"""
+	exit = False
+	with con:
+		# Database status row: (current song, next row to be processed)
+		# Read current song's status (title and next line to process) from the first row of the lyrics table.
+		cur.execute("SELECT title, status FROM lyrics WHERE rowid = ?", (1,))
+		status = cur.fetchone()
+		current_title = status[0]
+		current_row = status[1]
+
+		if not current_title:
+			print "No song set, initialize new song with python bot.py --set-song and try again."  # only bot.py has the proper switch
+			sys.exit()
+
+		# Fetch the row to process.
+		cur.execute("SELECT * FROM lyrics WHERE rowid = ?", (current_row,))
+		data = cur.fetchone()
+
+		# Was there a row to fetch?
+		if not data:
+			cur.execute("UPDATE lyrics SET title = ?, status = ? WHERE rowid = ?", (None, 2, 1)) # reinit status values
+			print "Current song finished, initialize a new song with python bot.py --set-song and try again."
+			#sys.exit() # <- Wont work. This raises a SystemExit exception, which
+			# 				  causes the with block to rollback the execute statement!
+			exit = True
+
+		# Row belongs to current song => return (title, lyric)-pair and increment row index in the status row.
+		elif not data[0] or data[0] == current_title:
+			cur.execute("UPDATE lyrics SET status = ? WHERE rowid = ?", (current_row + 1, 1))
+			return (data[0], data[2])  # title (data[0]) is !None only for the first line of each song
+
+		# Row starts a new song => clear title from the status row and prompt for a song change.
+		elif data[0] != current_title:
+			cur.execute("UPDATE lyrics SET title = ? WHERE rowid = ?", (None, 1))
+			print "Current song finished, initialize a new song with --set-song and try again."
+			exit = True
+
+	if exit:
+		sys.exit()
+
+
+def set_song(search_term):
+	"""Set the next song to be processed by get_next_lyric().
+	Arg:
+		search_term (string): the song to process next, one of the values in the search
+		column of the lyrics table.
 	"""
 	with con:
-		# get the rowid of the next line to be processed
-		cur.execute("SELECT status FROM lyrics WHERE rowid = ?", (1,))
-		row_idx = cur.fetchone()[0]
-	
-		# fetch the actual row
-		cur.execute("SELECT title, verse, status FROM lyrics WHERE rowid = ?", (row_idx,))
+		cur.execute("SELECT rowid, title FROM lyrics WHERE search = ?", (search_term,))
 		row = cur.fetchone()
 
-		title = row[0]
-		lyric = row[1]
-		status = row[2]
+		# Input didn't match to the table => print valid options on screen.
+		if not row:
+			print "Invalid option."
+			valid = get_songs()  # opens another database connection! (is this bad?)
+			print "Valid options:"
+			for name in valid:
+				print name
+			
+		# Update the status row with the title and start row index of the selected song.
+		else:
+			cur.execute("UPDATE lyrics SET title=?, status=? WHERE rowid=?", (row[1], row[0], 1))
+			print "Next song set to", search_term
 
-		# read the status code from the end of the row and act accordingly:
-		# 1 - this is the last line of the current song. Change the code to 2
-		# and return the lyric
-		if status == 1:
-			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, row_idx))
-			return (None, lyric)
 
-		# 2 - the current song is finished, wait for permission to start the next one,
-		# don't return a lyric
-		elif status == 2:
-			return (None, None)
-
-		# 3 - OK to start the next one. Fetch and return the next row or None if
-		# the previous song was the last one in the database.
-		# Return both the title and the first line of lyrics
-		elif status == 3:
-			next_idx = row_idx + 1
-			cur.execute("SELECT * FROM lyrics WHERE rowid = ?", (next_idx,))
-			row = cur.fetchone()
-			if row == None:
-				print("No new song to fetch. Reset database with --init-song -switch")
-				sys.exit(0)
-
-			title = row[0]
-			lyric = row[1]
-
-			# update the status code of the first row to match the rowid to the next
-			# row to read from
-			next_idx += 1
-			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (next_idx, 1))
-
-			return (title, lyric)
-
-		# no satus code - the current song is not done. Fetch the next row and update the
-		# first row.
-		next_idx = row_idx + 1
-		cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (next_idx, 1))
-		return (title, lyric)
+def get_songs():
+	"""Return a list of valid search terms to use with --set-song."""
+	with con:
+		cur.execute("SELECT search FROM lyrics")
+		data = cur.fetchall()
+		return [search[0] for search in data if search[0]] # drop empty strings
 
 
 def get_fact():
-	"""Randomize a fact and print it on screen."""
+	"""Return a random fact from the database."""
 	with con:
 		cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
-		fact = cur.fetchone()
-		cur.execute("UPDATE lyrics SET status=? WHERE status=?", (3, 2))
+		fact = cur.fetchone()[0]
 
-		return fact
+		return (fact, "fact")
 		
 
 #==============================================================================
@@ -307,17 +338,12 @@ def randomize(quote_record):
 
 def randomize_lyric():
 	"""Fetch a lyric and randomize it."""
-	lyric_record = get_lyric()
+	lyric_record = get_next_lyric()
 	title = lyric_record[0]
 	lyric = lyric_record[1]
 
-	if lyric != None:
-		randomized = switch(lyric)["randomized"]
-		print "New lyric:", randomized
-		return (title, randomized)
-	else:
-		print "Current song finished"
-		sys.exit()
+	randomized = switch(lyric)["randomized"]
+	return (title, randomized)
 
 
 #==============================================================================
@@ -328,8 +354,6 @@ def normalize_tokens(tokens):
 	two tokens: eg. "can't" -> ["can", "'t"].
 	This function normalizes tokens by reattaching the parts back together. This will prevent
 	switch() from choosing the prefixes to be switched (words with apostrophes would be rejected anyway).
-	Note: words enclosed with apostrophes should not be stitched to the previous one!
-		"You had me at 'hello'." should not be processed to "You had me at'hello'."! 
 	Arg:
 		tokens (list):  a tokenized list of a quote
 	Return:
@@ -352,16 +376,14 @@ def normalize_tokens(tokens):
 
 def main():
 	parser = argparse.ArgumentParser(description="A quote randomizer.")
-	parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
-	parser.add_argument("--tags", help="Shows info on all tags used to categorize words into classes.", action="store_true")
+	parser.add_argument("--quote", help="Generate a randomized quote.", action="store_true")
+	parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
 	parser.add_argument("--update-database", nargs="?", metavar="mode", const="full", help="""Fills the database by executing quotes.sql.
 		If no mode is set, the quotes and lyrics tables are parsed for new words to add to the dictionary.
 		If mode is set to 'quick' the dictionary is not modified.""")
-	parser.add_argument("--song", help="Generates the next song lyric from the database or nothing if the current song is finished. To start the next song generate at least one regular quote.", action="store_true")
-	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
-	parser.add_argument("--set-song", metavar="song", help="Sets the given song to be the next one read by the '--song' switch. See the search column of the lyrics table for valid names.")
-	parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
-
+	parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
+	parser.add_argument("--tags", help="Shows info on all tags used to categorize words into classes.", action="store_true")
+	
 	args = parser.parse_args()
 	#print args
 
@@ -380,9 +402,9 @@ def main():
 			sys.exit()
 
 
-	#####################
+	#===================#
 	# --update-database #
-	#####################
+	#===================#
 	# If no optional parameter was provided, also recreate the dictionary.
 	if args.update_database:
 		quick = False
@@ -404,66 +426,44 @@ def main():
 		dbaccess.update_db(quick)
 
 
-	##########
-	# --song #
-	##########
-	elif args.song:
-		randomize_lyric()
-
-
-	###############
-	# --init-song #
-	###############
-	# change the status codes of the lyrics table back to initial values
-	elif args.init_song:
-		with con:
-			# set all end-of-song codes back to 1
-			cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
-			# set the row index back to the first row of the first song
-			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, 1))
-		print "Done"
-
-
-	##############
-	# --set-song #
-	##############
-	# attempt to set the provided song to be the next one read from the database
-	elif args.set_song:
-		with con:
-			cur.execute("SELECT rowid FROM lyrics WHERE search = ?", (args.set_song,))
-			row = cur.fetchone()
-
-			if row == None:
-				print "Invalid song"
-				sys.exit(1)
-			else:
-				cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
-				cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
-
-
-	##########
-	# --fact #
-	##########
-	elif args.fact:
-		fact = get_fact()
-		rand = randomize(fact, "fact")
+	#=========#
+	# --quote #
+	#=========#
+	elif args.quote:
+		quote = get_quote()
+		rand = randomize(quote)
 		print rand[0] + "\n--" + rand[1]
 
 
-	########
+	#========#
+	# --fact #
+	#========#
+	elif args.fact:
+		fact = get_fact()
+		rand = randomize(fact)
+		print rand[0] + "\n--" + rand[1]
+
+
+		"""
+		#========#
+		# --song #
+		#========#
+		# Not supported, running randomize_lyric() will affect the bot's status.
+		# Maybe give the bot its own working dataset?
+		elif args.song:
+			randomize_lyric()
+		"""
+
+
+	#======#
 	# misc #
-	########
+	#======#
 	elif args.size:
 		dbaccess.database_size()
 
 	elif args.tags:
 		nltk.help.upenn_tagset()
 
-	# no command line argument provided -> print a randomized quote or a fact on screen
-	else:
-		quote = get_quote()
-		rand = randomize(new)
-		print rand[0] + "\n--" + rand[1]
 
 
 

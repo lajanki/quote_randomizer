@@ -7,8 +7,10 @@ Tweets quotes randomized by quotes.py
 
 
 Change log:
+21.3.2017
+ *  Small changes to how song lyrics are processed to reflect the changes in quotes.py.
 17.3.2017
- *  initial version
+ *  Initial version.
 """
 
 
@@ -28,53 +30,17 @@ if __name__ == "__main__":
 
 
 	parser = argparse.ArgumentParser(description="A quote randomizer.")
-	parser.add_argument("--init-song", help="Changes the status codes for the lyrics table back to initial values.", action="store_true")
-	parser.add_argument("--set-song", metavar="song", help="Sets the given song to be the next one read by the '--song' switch. See the search column of the lyrics table for valid names.")
-	parser.add_argument("--tweet", metavar="mode", help="Generates a quote or a song lyric and posts it to Twitter. Requires access tokens and API keys from Twitter.")
+	parser.add_argument("--tweet", metavar="mode", help="Generates a [quote] or a [song] lyric and posts it to Twitter. Requires access tokens and API keys from Twitter.")
+	parser.add_argument("--set-song", metavar="song", default="list", help="Sets the given song to be the next one read by --tweet song. Use [list] to see valid choices.")
 
 	args = parser.parse_args()
 	#print args
 
 
-	###############
-	# --init-song #
-	###############
-	# Change the status codes of the lyrics table back to initial values.
-	if args.init_song:
-		con = quotes.con
-		cur = quotes.cur
-
-		with con:
-			# set all end-of-song codes back to 1
-			cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
-			# set the row index back to the first row of the first song
-			cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (2, 1))
-		print "Done"
-
-
-	##############
-	# --set-song #
-	##############
-	# Attempt to set the song provided as a command line argument to be the next one read from the database.
-	elif args.set_song:
-		con = quotes.con
-		cur = quotes.cur
-
-		with con:
-			cur.execute("SELECT rowid FROM lyrics WHERE search = ?", (args.set_song,))
-			row = cur.fetchone()
-
-			if row == None:
-				print "Invalid song"
-				sys.exit(1)
-			else:
-				cur.execute("UPDATE lyrics SET status=? WHERE status=? OR status=?", (1,2,3))
-				cur.execute("UPDATE lyrics SET status=? WHERE rowid=?", (row[0], 1))
-
-	###########
+	#=========#
 	# --tweet #
-	###########
-	elif args.tweet:
+	#=========#
+	if args.tweet:
 		msg = ""
 		mode = args.tweet
 		if mode not in ["quote", "song"]:
@@ -92,13 +58,12 @@ if __name__ == "__main__":
 				msg = randomized_quote[0] + "\n" + "--" + randomized_quote[1]
 
 		else: 	# mode == "song"
-			randomized_lyric = quotes.randomize_lyric()
-			title = randomized_lyric[0]
-			lyric = randomized_lyric[1]
-			if title != None:
-				msg = randomized_lyric[0]+"\n"+randomized_lyric[1]
+			title, lyric = randomize_lyric()
+
+			if title:
+				msg = title + "\n" + lyric
 			else:
-				msg = randomized_lyric[1]
+				msg = lyric
 
 
 		with open(quotes.path+"keys.json") as f:
@@ -111,6 +76,18 @@ if __name__ == "__main__":
 		twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
 		twitter.update_status(status = msg)
 		logging.info(msg)
+
+	#============#
+	# --set song #
+	#============#
+	elif args.set_song:
+		if args.set_song == "list":
+			for name in quotes.get_songs():
+				print name
+
+		else:
+			quotes.set_song(args.set_song)
+
 
 
 
