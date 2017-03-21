@@ -31,30 +31,26 @@ Keys:
 
 ## Usage
 
-Running ```quotes.py``` without any command line arguments generates a randomized quote to stdout.
-Command line arguments:
-
+The main module ```quotes.py``` can be run directly for example usage:
 ```
-  --size                Shows the size of the databse.
-  --tags                Shows info on all tags used to categorize words into
-                        classes.
+  --quote               Generate a randomized quote.
+  --fact                Generate a randomized fact.
   --update-database [mode]
                         Fills the database by executing quotes.sql. If no mode
                         is set, the quotes and lyrics tables are parsed for
                         new words to add to the dictionary. If mode is set to
                         'quick' the dictionary is not modified.
-  --song                Generates the next song lyric from the database or
-                        nothing if the current song is finished. To start the
-                        next song generate at least one regular quote.
-  --init-song           Changes the status codes for the lyrics table back to
-                        initial values.
-  --set-song song       Sets the given song to be the next one read by the '--
-                        song' switch. See the search column of the lyrics
-                        table for valid names.
-  --fact                Generate a randomized fact.
+  --size                Shows the size of the databse.
+  --tags                Shows info on all tags used to categorize words into
+                        classes.
 ```
-
-Additionally, ```bot.py --tweet quote``` tweets a randomized quote given valid Twitter access keys in ```keys.json```. 
+The Twitterbot in ```bot.py``` generates and tweets randomized quotes and song lyrics. Using it requires valid Twitter access tokens and keys stored in ```keys.json```. 
+```
+  --tweet mode     Generates a [quote] or a [song] lyric and posts it to
+                   Twitter. Requires access tokens and API keys from Twitter.
+  --set-song song  Sets the given song to be the next one read by --tweet
+                   song. Use [list] to see valid choices.
+```
 
 
 ## File structure
@@ -71,48 +67,15 @@ Additionally, ```bot.py --tweet quote``` tweets a randomized quote given valid T
   - SQL statements to create the database. Updating the database is done by manually updating this file and running the main script with the ```--rebuild-database``` switch.
 * quotes.db
   - The databse containing three tables:
-    1. quotes: a pair of (quote, author) records
-    2. lyrics: a tuple of (title, search, verse, status) records, where
-       * title, the title of the song
-       * search, a search term given to the --set-song switch. Tells the main script to start this song the next time the --song switch is used. This is usually the same as title.
+    1. quotes: with columns (quote, author) of actual quotes read from various internet sources, see quotes.sql.
+    2. lyrics: with columns (title, search, verse, status), where
+       * title, the title of a song
+       * search, a shorter version of title used to tell --set-song which song should be processed next
        * verse, a line or two of the actual lyrics. The purpose is to split the actual verses into small enough pieces to fit into a tweet.
-       * status, whereas randomizing a quote is intended to happen by choosing a random quote from the database, song lyrics need to be processed in order. The satus code tells the script whether the last line of the song was encountered (satus code of 1). After the last line is processed the code changes to 2 telling the script to do nothing but wait for permission to move to the next song. Once at least one regular quote is generated the code changes to 3 and the next time the --song switch is used the script will start the next song.
-    3. dictionary: a table of words parsed from the other two tables together with a tag identifying each word as a member of a specific word class. Using this tag a suitable word is chosen when randomizing quotes (ie. nouns get replaced by nouns, adjectives by adjectives etc.). The tag is determied by nltk.pos_tag() function.
+       * status, a leftover from previous version. Will probably be removed later...
+    3. dictionary: with columns (word, class) of pos-tagged words used to identify valid words for the randomizer to use. Most of the contents are pulled from the nltk library.
 
 
-
-#### Changelog
-17.3.2017
-* Added some unit tests and testing data.
-* Moved the bot part to its own module.
-* Minor tokenizing bugfixes.
-
-28.12.2016
-* Made the quote column in the database UNIQUE and removed the related redundancy check.
-* Added a frequency column to the database to indicate the number of times a quote has been picked.
-* Added a confirmation prompt for clearing the dictionary when using --rebuild-database.
-
-4.8.2016
-* simplified switch().
-
-11.7.2016
-* refactoring: moved general database query functions update_db(), parse_for_dictionary() and database_size() to their own module for easier access to other scripts utilizing the database.
-
-24.2.2016
-* removed the cumbersom START, END marking of quotes.sql. Instead all of quotes and lyrics are now parsed for the dictionary.
-* cleaned up database creation down to a single function.
-* added a dedicated function for parsing strings for valid words to add to the dictionary. Words with apostrophes and one letter words are not considered valid.
-* changed find_invalid() function to reflect the above: it now also finds and deletes all one letter words and optionally deletes words with apostrophes.
-* switch() now matches capitalization of the inserted word to the old word.
-
-27.10.2015
-* added ability to randomize facts
-
-27.10.2015
-* changed the argument parser class from optparse to argparse
-
-31.8.2015
-* initial release
 
 ___
 Written on Python 2.7.8
