@@ -4,8 +4,7 @@
 """
 A library module for general access points to quotes.db.
 
-TODO: Set find_invalid() to also look for errenous use of single quotes,
-  should only be used as an apostrophe.
+
 TODO: Include lyrics part in find_invalid()
 
 changelog
@@ -74,16 +73,22 @@ def update_db(quick=False):
 	invalid = find_invalid()
 	dupes = invalid["dupes"]
 	long_ = invalid["long"]
+	apostrophes = invalid["apostrophes"]
 	print "Done"
 
+	"""
 	if long_:
 		print "Found the following long quotes in quotes.sql:"
 		print long_
+	"""
 
 	if dupes:
 		print "Skipped the following duplicates:"
 		print dupes
 
+	if apostrophes:
+		print "The following quotes contains a double apostrophe ('') where possibly a double quote (\") should be:"
+		print apostrophes
 
 	# Check whether to parse quotes and lyrics for the dictionary.
 	if not quick:
@@ -193,10 +198,11 @@ def find_invalid():
 	uniques = []
 	dupes = []
 	long_ = []
+	apostrophes = []
 
 	with open(path+"quotes.sql") as f:
 		for line in f:
-			if "DROP TABLE IF EXISTS lyrics" in line:  # break when the lyrics table data is encoutered
+			if "INSERT INTO lyrics_status" in line:  # break when the lyrics_status table data is encoutered
 				break
 			if line == "\n" or line.startswith("--"):  # skip empty lines and comments
 				continue
@@ -205,8 +211,9 @@ def find_invalid():
 			line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "(" !) to the beginning...
 			line = line.lstrip("'")  # remove the single quote separately, this way no actual quote characters are removed
 			line = line.rstrip("');\n" )  # remove sql characters and any whitespace from the end
-			# Split by "'," combination to get the individual items from the (quote, author)-pair 
+			# Split by "'," combination to get the individual items from the (quote, author)-pair
 			quote, author = line.split("',")
+
 
 			# Check if this quote has already been seen
 			if quote in uniques:
@@ -214,11 +221,18 @@ def find_invalid():
 			else:
 				uniques.append(quote)
 
-			# Is it too long? Note: no separators.
+			# Is it too long?
 			if len(quote + author) > 135:
 				long_.append(quote)
 
-	return {"dupes": dupes, "long": long_}
+			# Look for quotes containing double apostrophes not followed by any of the valid suffixes
+			suffix = ("s", "t", "m", "d", "ll", "re", "ve")
+			#suffix = ["''" + s for s in suffix]
+			if "''" in quote and not any(["''"+s in quote for s in suffix]):
+				apostrophes.append(quote)
+
+
+	return {"dupes": dupes, "long": long_, "apostrophes": apostrophes}
 
 
 def normalize_tokens(tokens):

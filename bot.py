@@ -26,7 +26,8 @@ import quotes
 
 
 if __name__ == "__main__":
-	logging.basicConfig(filename = quotes.path + "quotes.log", format="%(asctime)s %(message)s", level=logging.INFO)
+	randomizer = quotes.Randomizer(name = "bot")
+	logging.basicConfig(filename = randomizer.path + "quotes.log", format="%(asctime)s %(message)s", level=logging.INFO)
 
 
 	parser = argparse.ArgumentParser(description="A quote randomizer.")
@@ -49,15 +50,15 @@ if __name__ == "__main__":
 
 		# Format the message of the tweet based on whether the database item was a quote or a fact.
 		if mode == "quote":
-			quote = quotes.get_quote()
-			randomized_quote = quotes.randomize(quote)
+			quote = randomizer.get_quote()
+			randomized_quote = randomizer.randomize(quote)
 
 			if randomized_quote[1] == "fact":
 				msg = "Random non-fact:\n" + randomized_quote[0]
 			else:
 				msg = randomized_quote[0] + "\n" + "--" + randomized_quote[1]
 
-		else: 	# mode == "song"
+		elif mode == "song":
 			title, lyric = randomize_lyric()
 
 			if title:
@@ -66,7 +67,7 @@ if __name__ == "__main__":
 				msg = lyric
 
 
-		with open(quotes.path+"keys.json") as f:
+		with open(randomizer.path+"keys.json") as f:
 			data = json.load(f)
 			API_KEY = data["API_KEY"]
 			API_SECRET = data["API_SECRET"]
@@ -82,11 +83,11 @@ if __name__ == "__main__":
 	#============#
 	elif args.set_song:
 		if args.set_song == "list":
-			for name in quotes.get_songs():
+			for name in randomizer.get_songs():
 				print name
 
 		else:
-			quotes.set_song(args.set_song)
+			randomizer.set_song(args.set_song)
 
 
 

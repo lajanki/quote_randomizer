@@ -15,9 +15,9 @@
 --https://www.reddit.com/r/quotes/
 
 
---DROP TABLE IF EXISTS quotes;  --data is no longer DROPPED!
---CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0);
-
+--****************
+--* quotes table *
+--****************
 
 INSERT INTO quotes(quote, author) VALUES ('Strive not to be a success, but rather to be of value.', 'Albert Einstein');
 INSERT INTO quotes(quote, author) VALUES ('I attribute my success to this: I never gave or took any excuse.', 'Florence Nightingale');
@@ -847,8 +847,6 @@ INSERT INTO quotes(quote, author) VALUES ('It is easier to build strong children
 INSERT INTO quotes(quote, author) VALUES ('Keep your eyes on the stars, and your feet on the ground.', 'Theodore Roosevel');
 
 
-
-
 --Buddha
 INSERT INTO quotes(quote, author) VALUES ('You yourself, as much as anybody in the entire universe, deserve your love and affection.', 'Buddha');
 INSERT INTO quotes(quote, author) VALUES ('You only lose what you cling to.', 'Buddha');
@@ -1139,7 +1137,6 @@ INSERT INTO quotes(quote, author) VALUES ('All the news that''s fit to print.', 
 INSERT INTO quotes(quote, author) VALUES ('Where''s the beef?', 'Wendy''s' );
 
 
-
 --games
 INSERT INTO quotes(quote, author) VALUES ('Thank you Mario! But our princess is in another castle!', 'Toad, Super Mario Bros.' );
 INSERT INTO quotes(quote, author) VALUES ('The right man in the wrong place can make all the difference in the world.', 'G-Man, Half-Life 2' );
@@ -1384,28 +1381,29 @@ INSERT INTO quotes(quote, author) VALUES ('Seahorses are raised by their fathers
 INSERT INTO quotes(quote, author) VALUES ('Mitochondria is the powerhouse of the cell.', 'fact');
 
 
-
 --lyrics
 INSERT INTO quotes(quote, author) VALUES ('In the end, the love you take is equal to the love you make.', 'The Beatles');
 INSERT INTO quotes(quote, author) VALUES ('All you need is love.', 'The Beatles');
 
 
 
+--*****************
+--* lyrics_status *
+--*****************
+
+-- Current position in the lyrics table for each app name specified to quotes.py.
+-- Initialized with names to the default value in quotes.py and one for thebot.
+-- Other entries will get added in quotes.py 
+INSERT INTO lyrics_status(name, current_song, current_row) VALUES ('main', '', 0)
+INSERT INTO lyrics_status(name, current_song, current_row) VALUES ('bot', '', 0)
 
 
-
--- The lyrics table.
--- The status column in the first row denotes the next line to read next.
--- status: 1 -- first line of a new song
-DROP TABLE IF EXISTS lyrics;
-CREATE TABLE lyrics (title TEXT, search TEXT UNIQUE, verse TEXT, status INTEGER);
-
-
---status row
-INSERT INTO lyrics(status) VALUES (2);
+--**********
+--* lyrics *
+--**********
 
 --Californication
-INSERT INTO lyrics(title, search, verse, status) VALUES ('Red Hot Chili Peppers - Californication','Californication', 'Psychic spies from China try to steal your mind''s elation', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('Red Hot Chili Peppers - Californication','Californication', 'Psychic spies from China try to steal your mind''s elation');
 INSERT INTO lyrics(verse) VALUES ('Little girls from Sweden dream of silver screen quotations');
 INSERT INTO lyrics(verse) VALUES ('And if you want these kind of dreams it''s Californication');
 INSERT INTO lyrics(verse) VALUES ('It''s the edge of the world and all of western civilization');
@@ -1431,7 +1429,7 @@ INSERT INTO lyrics(verse) VALUES ('Pay your surgeon very well to break the spell
 INSERT INTO lyrics(verse) VALUES ('Sicker than the rest there is no test but this is what you''re craving');
 
 --Stairway to Heaven
-INSERT INTO lyrics(title, search, verse, status) VALUES ('Led Zeppelin - Stairway to Heaven', 'Stairway to Heaven', 'There''s a lady who''s sure all that glitters is gold', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('Led Zeppelin - Stairway to Heaven', 'Stairway to Heaven', 'There''s a lady who''s sure all that glitters is gold');
 INSERT INTO lyrics(verse) VALUES ('And she''s buying a stairway to heaven. When she gets there she knows, if the stores are all closed');
 INSERT INTO lyrics(verse) VALUES ('With a word she can get what she came for. And she''s buying a stairway to heaven.');
 INSERT INTO lyrics(verse) VALUES ('There''s a sign on the wall but she wants to be sure');
@@ -1457,7 +1455,7 @@ INSERT INTO lyrics(verse) VALUES ('The tune will come to you at last. When all a
 INSERT INTO lyrics(verse) VALUES ('To be a rock and not to roll. And she''s buying a stairway to heaven.');
 
 --How Can I Tell You?
-INSERT INTO lyrics(title, search, verse, status) VALUES ('Cat Stevens - How Can I Tell You?', 'How Can I Tell You?', 'How can I tell you that I love you, I love you', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('Cat Stevens - How Can I Tell You?', 'How Can I Tell You?', 'How can I tell you that I love you, I love you');
 INSERT INTO lyrics(verse) VALUES ('But I can''t think of right words to say, I long to tell you that I''m always thinking of you');
 INSERT INTO lyrics(verse) VALUES ('I''m always thinking of you, but my words just blow away, just blow away');
 INSERT INTO lyrics(verse) VALUES ('It always ends up to one thing, honey and I can''t think of right words to say');
@@ -1472,7 +1470,7 @@ INSERT INTO lyrics(verse) VALUES ('But I can''t think of right words to say I lo
 INSERT INTO lyrics(verse) VALUES ('I''m always thinking of you... It always ends up to one thing honey and I can''t think of right words to say');
 
 --The Zen of Python
-INSERT INTO lyrics(title, search, verse, status) VALUES ('The Zen of Python', 'The Zen of Python', 'Beatiful is better than ugly.', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('The Zen of Python', 'The Zen of Python', 'Beatiful is better than ugly.');
 INSERT INTO lyrics(verse) VALUES ('Explicit is better than implicit.');
 INSERT INTO lyrics(verse) VALUES ('Simple is better than complex.' );
 INSERT INTO lyrics(verse) VALUES ('complex is better than complicated.' );
@@ -1493,7 +1491,7 @@ INSERT INTO lyrics(verse) VALUES ('If the implementation is easy to explain, it 
 INSERT INTO lyrics(verse) VALUES ('Namespaces are one honking great idea - let''s do more of those!');
 
 --Nights in white satin
-INSERT INTO lyrics(title, search, verse, status) VALUES ('Moody Blues - Nights in White Satin', 'Nights in White Satin', 'Nights in white satin', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('Moody Blues - Nights in White Satin', 'Nights in White Satin', 'Nights in white satin');
 INSERT INTO lyrics(verse) VALUES ('Never reaching the end. Letters I''ve written never meaning to send.');
 INSERT INTO lyrics(verse) VALUES ('Beauty I''ve always missed With these eyes before.' );
 INSERT INTO lyrics(verse) VALUES ('Just what the truth is I can''t say any more.' );
@@ -1509,7 +1507,7 @@ INSERT INTO lyrics(verse) VALUES ('Just what the truth is I can''t say any more.
 INSERT INTO lyrics(verse) VALUES ('Cause I love you, yes I love you. Oh how I love you, oh how I love you.');
 
 --What a Wonderful World
-INSERT INTO lyrics(title, search, verse, status) VALUES ('Louis Armstrong - What a Wonderful World', 'What a Wonderful World', 'I see trees of green, red roses too.', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('Louis Armstrong - What a Wonderful World', 'What a Wonderful World', 'I see trees of green, red roses too.');
 INSERT INTO lyrics(verse) VALUES ('I see them bloom for me and you and I think to myself what a wonderful world.' );
 INSERT INTO lyrics(verse) VALUES ('I see skies of blue and clouds of white. The bright blessed day, the dark sacred night.' );
 INSERT INTO lyrics(verse) VALUES ('And I think to myself what a wonderful world.' );
@@ -1519,7 +1517,7 @@ INSERT INTO lyrics(verse) VALUES ('I hear baby''s crying and I watched them grow
 INSERT INTO lyrics(verse) VALUES ('And I think to myself what a wonderful world. Yes, I think to myself what a wonderful world.');
 
 --Behind Blue Eyes
-INSERT INTO lyrics(title, search, verse, status) VALUES ('Limp Bizkit - Behind Blue Eyes', 'Behind Blue Eyes', 'No one knows what it''s like to be the bad man, to be the sad man. Behind blue eyes.', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('Limp Bizkit - Behind Blue Eyes', 'Behind Blue Eyes', 'No one knows what it''s like to be the bad man, to be the sad man. Behind blue eyes.');
 INSERT INTO lyrics(verse) VALUES ('And no one knows what it''s like to be hated, to be fated to telling only lies.' );
 INSERT INTO lyrics(verse) VALUES ('But my dreams they aren''t as empty as my conscience seems to be.' );
 INSERT INTO lyrics(verse) VALUES ('I have hours, only lonely. My love is vengeance that''s never free.' );
@@ -1531,7 +1529,7 @@ INSERT INTO lyrics(verse) VALUES ('No one knows how to say that they''re sorry a
 INSERT INTO lyrics(verse) VALUES ('No one knows what its like to be the bad man, to be the sad man. Behind blue eyes.');
 
 --Yesterday
-INSERT INTO lyrics(title, search, verse, status) VALUES ('The Beatles - Yesterday', 'Yesterday', 'Yesterday all my troubles seemed so far away.', 1);
+INSERT INTO lyrics(title, search, verse) VALUES ('The Beatles - Yesterday', 'Yesterday', 'Yesterday all my troubles seemed so far away.');
 INSERT INTO lyrics(verse) VALUES ('Now it looks as though they''re here to stay. Oh, I believe in yesterday.' );
 INSERT INTO lyrics(verse) VALUES ('Suddenly I''m not half the man I used to be. There''s a shadow hanging over me. Oh, yesterday came suddenly.' );
 INSERT INTO lyrics(verse) VALUES ('Why she had to go, I don''t know, she wouldn''t say. I said something wrong, now I long for yesterday.' );

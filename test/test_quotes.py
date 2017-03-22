@@ -13,6 +13,36 @@ import quotes
 # Tests for the switch and string normalization functions in quote.py
 
 
+class RandomizeTestCase(unittest.TestCase):
+	"""Does the randomization for quotes, facts and lyrics work properly?"""
+
+	@classmethod
+	def setUpClass(self):
+		"""Create a randomizer."""
+		self.randomizer = quotes.Randomizer()
+
+
+	@classmethod
+	def tearDownClass(self):
+		del self.randomizer
+
+
+	def test_quote_randomizer(self):
+		"""Is the result of generating a quote a tuple?
+		Mostly to check the functions don't throw errors.
+		"""
+		quote = self.randomizer.get_quote()
+		rand = self.randomizer.randomize(quote)
+		self.assertIsInstance(rand, tuple)
+
+
+	def test_fact_randomizer(self):
+		"""Is the result of generating a fact a tuple?"""
+		fact = self.randomizer.get_fact()
+		rand = self.randomizer.randomize(fact)
+		self.assertIsInstance(rand, tuple)
+
+
 
 class SwitchTestCase(unittest.TestCase):
 	"""Tests regarding switch() behaviour."""
@@ -22,14 +52,15 @@ class SwitchTestCase(unittest.TestCase):
 		"""Read the quotes from the test database."""
 		con = lite.connect("./test_quotes.db")
 		cur = con.cursor()
+		randomizer = quotes.Randomizer() # only needed in setup
 
 		with con:
 			cur.execute("SELECT * FROM quotes")
 			self.quotes = cur.fetchall()
 
-		# drop author and randomize the quotes
+		# drop authors and randomize the quotes
 		self.orig_quotes = [q[0] for q in self.quotes]
-		self.processed = [quotes.switch(q) for q in self.orig_quotes]  # items are dicts with "randomized", "old" and "new" keys
+		self.processed = [randomizer.switch(q) for q in self.orig_quotes]  # items are dicts with "randomized", "old" and "new" keys
 
 
 	def test_switch_length(self):
@@ -70,6 +101,7 @@ class NormalizeTestCase(unittest.TestCase):
 		"""Read the quotes from the test database."""
 		con = lite.connect("./test_quotes.db")
 		cur = con.cursor()
+		randomizer = quotes.Randomizer()
 
 		with con:
 			cur.execute("SELECT * FROM quotes")
@@ -77,7 +109,7 @@ class NormalizeTestCase(unittest.TestCase):
 
 		# drop author and randomize the quotes
 		self.orig_quotes = [q[0] for q in self.quotes]
-		self.processed = [quotes.switch(q) for q in self.orig_quotes]  # items are dicts with "randomized", "old" and "new" keys
+		self.processed = [randomizer.switch(q) for q in self.orig_quotes]  # items are dicts with "randomized", "old" and "new" keys
 
 
 	def test_normalization(self):
@@ -86,6 +118,49 @@ class NormalizeTestCase(unittest.TestCase):
 			split = quote["randomized"].split()
 			has_apostrophe_starts = any([x.startswith("'") for x in split])
 			self.assertFalse(has_apostrophe_starts, "Found a word starting with a ' in {}".format(quote["randomized"]))
+
+
+class SongProcessTestCase(unittest.TestCase):
+	"""Does repeated calls to get_next_lyric() process a song properly?"""
+
+	@classmethod
+	def setUpClass(self):
+		self.randomizer = quotes.Randomizer()
+
+	@classmethod
+	def tearDownClass(self):
+		del self.randomizer
+
+	def test_song_change(self):
+		"""Is the return value of get_next_lyric() a tuple of two non-empty values
+		after a song change?
+		"""
+		self.randomizer.set_song("Californication")
+		lyric = self.randomizer.get_next_lyric()
+		self.assertIsInstance(lyric, tuple)
+		self.assertIsNotNone(lyric[0])
+		self.assertIsNotNone(lyric[1])
+		
+
+	def test_full_song_process(self):
+		"""Is the return value of get_next_lyric() a tuple on the first n calls
+		and None on any subsequent calls?
+		"""
+		self.randomizer.set_song("What a Wonderful World") # 8 lines in the database
+
+		# First 8 calls should return a tuple
+		for i in range(8):
+			lyric = self.randomizer.get_next_lyric()
+			self.assertIsInstance(lyric, tuple)
+
+		# subsequent calls should be None
+		for i in range(2):
+			lyric = self.randomizer.get_next_lyric()
+			self.assertIsNone(lyric)
+
+
+
+
 
 
 
