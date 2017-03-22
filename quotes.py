@@ -29,7 +29,7 @@ Requires:
 	  https://dev.twitter.com/oauth/overview/application-owner-access-tokens
 
 
-TODO: a bunch of stuff:
+TODO:
  * check quotes.sql for apostrophe usage and include lyrics part to existing checks
  * better detection for tags to change (ngrams?)   				
 
