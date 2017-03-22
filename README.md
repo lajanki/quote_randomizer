@@ -35,6 +35,10 @@ The main module ```quotes.py``` can be run directly for example usage:
 ```
   --quote               Generate a randomized quote.
   --fact                Generate a randomized fact.
+  --song                Generate the next song lyric for the current song. Use
+                        --set-song to initialize a new song.
+  --set-song song       Sets the given song to be the next one read by --song.
+                        Use [list] to see valid choices.
   --update-database [mode]
                         Fills the database by executing quotes.sql. If no mode
                         is set, the quotes and lyrics tables are parsed for
@@ -43,6 +47,7 @@ The main module ```quotes.py``` can be run directly for example usage:
   --size                Shows the size of the databse.
   --tags                Shows info on all tags used to categorize words into
                         classes.
+
 ```
 The Twitterbot in ```bot.py``` generates and tweets randomized quotes and song lyrics. Using it requires valid Twitter access tokens and keys stored in ```keys.json```. 
 ```
@@ -51,7 +56,7 @@ The Twitterbot in ```bot.py``` generates and tweets randomized quotes and song l
   --set-song song  Sets the given song to be the next one read by --tweet
                    song. Use [list] to see valid choices.
 ```
-
+The ```--set-song``` switches are separate for both modules. In order to process a song the script needs to read it from the database line by line on each subsequent use of either ```quotes.py --song``` or ```bot.py --tweet song```. The status data is stored separately and using the main module will not affect which line the bot reads next.
 
 ## File structure
 
@@ -66,14 +71,14 @@ The Twitterbot in ```bot.py``` generates and tweets randomized quotes and song l
 * quotes.sql
   - SQL statements to create the database. Updating the database is done by manually updating this file and running the main script with the ```--rebuild-database``` switch.
 * quotes.db
-  - The databse containing three tables:
+  - The databse containing four tables:
     1. quotes: with columns (quote, author) of actual quotes read from various internet sources, see quotes.sql.
-    2. lyrics: with columns (title, search, verse, status), where
+    2. lyrics: with columns (title, search, verse), where
        * title, the title of a song
        * search, a shorter version of title used to tell --set-song which song should be processed next
        * verse, a line or two of the actual lyrics. The purpose is to split the actual verses into small enough pieces to fit into a tweet.
-       * status, a leftover from previous version. Will probably be removed later...
     3. dictionary: with columns (word, class) of pos-tagged words used to identify valid words for the randomizer to use. Most of the contents are pulled from the nltk library.
+    4. lyrics_status: a small table for keeping track of which song lyric should be read next.
 
 
 
