@@ -33,18 +33,14 @@ import dbaccess
 
 class Randomizer:
 
-    def __init__(self):
-        """Define database connections.
-        Arg:
-            name (string): instance name, separates normal usage of database resources from
-                how the bot uses them. (Mainly keeps the bot's lyrics table status
-                separate from the data when running this script on it's own)
-        """
+    def __init__(self, path = "./"):
+        """Define database connections and a base path for data files."""
+        self.path = path
         self.con, self.cur = self.get_database_connection()
 
     def get_database_connection(self):
         """Try to create a connection to the database. Raises an error if it doesn't exist."""
-        db_path = "quotes.db"
+        db_path = self.path + "quotes.db"
 
         # lite.connect will create an empty database if one doesn't exist, raise an error instead
         if not os.path.isfile(db_path):
@@ -70,7 +66,10 @@ class Randomizer:
         return change_degree
 
     def choose_replacing_words(self, tokens_to_change):
-        """Given a list of tokenized words, choose words with matching pos tags from the database."""
+        """Given a list of tokenized words, choose words with matching pos tags from the database.
+        Arg:
+            tokens_to_change (list): a list of (idx, word, tag) tuples
+        """
         new_words = []
         with self.con:
             for token in tokens_to_change:
@@ -101,12 +100,12 @@ class Randomizer:
 
     def randomize_string(self, string):
         """Perform the actual randomizing of the given string.
-        Analyze the structure of the string, replace 1-3 words with ones fetched
+        Analyze the structure of the string and replace 1-3 words with ones fetched
         from database.
         Arg:
             string (string): the string to randomize
         Return:
-            a dict of the randomized string, words replaced and words inserted
+            the new string
         """
         # tokenize, reattach apostrophes and pos tag tokens
         tokens = Randomizer.normalize_tokens(nltk.word_tokenize(string))
@@ -133,27 +132,8 @@ class Randomizer:
         words_to_change = random.sample(valid, change_degree) # list of (idx, word, tag) tuples of words from the original string
         replacing_words = self.choose_replacing_words(words_to_change) # list of (idx, word) tuples of new words
         tokens = self.switch_word_tokens(tokens, replacing_words)
-
-        # join the tokens back together and trim extra whitespace around punctuation
-        punctuation = {
-            " .": ".",
-            " ,": ",",
-            " !": "!",
-            " ?": "?",
-            " :": ":",
-            " ;": ";",
-            " %": "%",
-            "$ ": "$",
-            "@ ": "@",
-            "# ": "#",
-            "`` ": "\"",
-            "''": "\"",
-            "https: ": "https:",
-            "http: ": "http:"
-        }
         s = " ".join(tokens)
-        for old, new in punctuation.iteritems():
-            s = s.replace(old, new)
+        s = Randomizer.cleanup(s)
 
         return s
 
@@ -174,8 +154,8 @@ class Randomizer:
         pass
 
 
-    @classmethod
-    def normalize_tokens(self, tokens):
+    @staticmethod
+    def normalize_tokens(tokens):
         """nltk.word_tokenize() will tokenize words using ' as an apostrophe into
         two tokens: eg. "can't" -> ["can", "'t"].
         This function normalizes tokens by reattaching the parts back together. This will prevent
@@ -195,12 +175,38 @@ class Randomizer:
         normalized = [token for token in tokens if token != "DEL"]
         return normalized
 
+    @staticmethod
+    def cleanup(s):
+        """Cleanup a string by removing extra whitespace around certain punctuation character.
+        This whitespace is introduced when tokenizing a string.
+        """
+        punctuation = {
+            " .": ".",
+            " ,": ",",
+            " !": "!",
+            " ?": "?",
+            " :": ":",
+            " ;": ";",
+            " %": "%",
+            "$ ": "$",
+            "@ ": "@",
+            "# ": "#",
+            "`` ": "\"",
+            "''": "\"",
+            "https: ": "https:",
+            "http: ": "http:"
+        }
+        for old, new in punctuation.iteritems():
+            s = s.replace(old, new)
+
+        return s
+
 
 class QuoteRandomizer(Randomizer):
     """Randomizer for quotes and facts."""
 
-    def __init__(self):
-        Randomizer.__init__(self)
+    def __init__(self, path = "./"):
+        Randomizer.__init__(self, path)
 
     def generate(self):
         """Choose a random quote or fact from the database and randomized it."""
@@ -234,7 +240,7 @@ class QuoteRandomizer(Randomizer):
             self.cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
             fact = self.cur.fetchone()[0]
 
-            return (fact, "fact")
+        return (fact, "fact")
 
 
 class SongRandomizer(Randomizer):
