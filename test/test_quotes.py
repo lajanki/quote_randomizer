@@ -62,6 +62,7 @@ class RandomizeTestCase(unittest.TestCase):
         word = replacing_words[1][1]
         self.assertEqual(word, word.upper())
 
+    @unittest.skip("Ineffective test: nltk.pos_tag determines the tag of a word from context. Tags given to test words below may not match expected tags.")
     def testChooseReplacingWordsKeepsPOSTagsIntact(self):
         """Does choose_replacing_words replace with the same POS tag?"""
         tokens =  [(0, "green", "JJ"), (1, "carbon", "NN")]
@@ -147,41 +148,57 @@ class QuoteRandomizerTestCase(unittest.TestCase):
         self.assertNotEqual(quote, randomized)
 
 
-@unittest.skip("Old behaviour")
-class SongProcessTestCase(unittest.TestCase):
-    """Does repeated calls to get_next_lyric() process a song properly?"""
+class SongRandomizerTestCase(unittest.TestCase):
+    """SongRandomizer test cases."""
 
     @classmethod
     def setUpClass(self):
-        self.randomizer = quotes.Randomizer()
+        self.randomizer = quotes.SongRandomizer(name = "test_randomizer", path = "../")
+        self.randomizer.add_lyrics_status_entry()  # add a new song status entry for testing purposes
 
     @classmethod
     def tearDownClass(self):
+        with self.randomizer.con:
+            self.randomizer.cur.execute("DELETE FROM lyrics_status WHERE name = ?", (self.randomizer.name,))  # remove the status entry
         del self.randomizer
 
-    def test_song_change(self):
-        """Is the return value of get_next_lyric() a tuple of two non-empty values
-        after a song change?
-        """
-        self.randomizer.set_song("Californication")
-        lyric = self.randomizer.get_next_lyric()
-        self.assertIsInstance(lyric, tuple)
-        self.assertIsNotNone(lyric[0])
-        self.assertIsNotNone(lyric[1])
+    def testInvalidNameRaisesErrorOnGetStatus(self):
+        """Does trying to get the status of invalid randomizer raise an error?"""
+        invalid_randomizer = quotes.SongRandomizer(name="no_such_randomizer", path="../")
+        self.assertRaises(TypeError, invalid_randomizer.get_current_song_status)
 
+    def testNoSongSetRaisesErrorOnGetStatus(self):
+        """Does trying to get the current status raise an error when no song has been set?"""
+        self.randomizer.set_song_status("", -1)  # ensure current_song is empty
+        self.assertRaises(quotes.SongError, self.randomizer.get_current_song_status)
 
-    def test_full_song_process(self):
-        """Is the return value of get_next_lyric() a tuple on the first n calls
-        and None on any subsequent calls?
-        """
-        self.randomizer.set_song("What a Wonderful World") # 8 lines in the database
+    def testGetNextLyricIncrementsRowId(self):
+        """Does calling get_next_lyric increment the rowid of the lyrics_status table?"""
+        self.randomizer.set_song("Yesterday")
+        song, old_row = self.randomizer.get_current_song_status()
+        self.randomizer.get_next_lyric()
 
-        # First 8 calls should return a tuple
+        # read the status again
+        song, new_row = self.randomizer.get_current_song_status()
+        self.assertEqual(new_row, old_row + 1)
+
+    def testFullSongProcess(self):
+        """Does n+1 calls to get_next_lyric raise an error to denote empty song?"""
+        self.randomizer.set_song("Yesterday")  # 8 lines, 9th call to get_next_lyric should raise SongError
         for i in range(8):
-            lyric = self.randomizer.get_next_lyric()
-            self.assertIsInstance(lyric, tuple)
+            print i
+            title, lyric = self.randomizer.get_next_lyric()
 
-        # subsequent calls should be None
-        for i in range(2):
-            lyric = self.randomizer.get_next_lyric()
-            self.assertIsNone(lyric)
+        # 9th call should raise error
+        self.assertRaises(quotes.SongError, self.randomizer.get_next_lyric)
+
+    def testSetInvalidSongRaisesError(self):
+        """Does trying to set the next song to process to a non-existing song raise an error?"""
+        self.assertRaises(quotes.SongError, self.randomizer.set_song, "no_such_song")
+
+    def testSetSong(self):
+        """Does calling set_song change song info in lyrics_status?"""
+        self.randomizer.set_song("How Can I Tell You?")
+        song, row = self.randomizer.get_current_song_status()
+
+        self.assertEqual(song, "Cat Stevens - How Can I Tell You?")

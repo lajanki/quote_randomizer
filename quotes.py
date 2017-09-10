@@ -246,71 +246,79 @@ class QuoteRandomizer(Randomizer):
 class SongRandomizer(Randomizer):
     """Randomizer for song lyrics. Keeps track of which lyrics was previously fetched from the database
     so whole songs are processed in order.
+    Status of the current song (for a given SongRandomizer) is stored in a separate lyrics_status tables
+    with the schema
+        CREATE TABLE lyrics_status (name TEXT UNIQUE, current_song TEXT, current_row INTEGER);
+    where name is a name given to the SongRandomizer and current_row is a row index to the lyrics table.
     """
 
-    def __init__(self, name):
+    def __init__(self, name = "song_randomizer", path = "./"):
         """Init a randomizer together with a name to help determine the next line to processed
         from the database.
         """
-        Randomizer.__init__(self)
+        Randomizer.__init__(self, path)
         self.name = name
 
     def generate(self):
         """Fetch a lyric and randomize it."""
         lyric_record = self.get_next_lyric()
-        if lyric_record:
-            title = lyric_record[0]
-            lyric = lyric_record[1]
+        title = lyric_record[0]
+        lyric = lyric_record[1]
 
-            randomized = self.switch(lyric)["randomized"]
-            return (title, randomized)
+        randomized = self.randomize_string(lyric)
+        return (title, randomized)
 
-    def get_next_lyric(self):
-        """Each song in the lyrics table is meant to be processed line-by-line. This functions returns the
-        next line of lyrics to be processed by switch().
-        The rowid of the database row to read is stored in the status (ie. first) line of the lyrics table.
-        Calls sys.exit() if the next line of lyrics is from another song.
-        Return:
-            A tuple of (title, lyric) the lyric read from the database or None if the previous song has
-            been fully processed. The tile of a song is != None only for the first lyric of each song
-                denoting a change in song.
+    def get_current_song_status(self):
+        """Get current song status data from song_status table. Raises an Error if no song
+        has been set (ie. previous song has been fully processed and waiting for call to start the next song).
         """
         with self.con:
             # Read current song status from lyrics_status table.
-            self.cur.execute("SELECT * FROM lyrics_status WHERE name = ?", (self.name,))
+            self.cur.execute("SELECT current_song, current_row FROM lyrics_status WHERE name = ?", (self.name,))
             status = self.cur.fetchone()
-            current_title = status[1]
-            current_row = status[2]
 
-            if not current_title:
-                print "No song set, initialize new song with python bot.py --set-song and try again."  # only bot.py has the proper switch
-                return  # returns None. This is followed by sys.exit() in randmize_lyric()
+        current_song = status[0]  # raises TypeError is self.name is not a valid database entry name
+        current_row = status[1]
 
-            # Fetch the row to process.
-            self.cur.execute("SELECT * FROM lyrics WHERE rowid = ?", (current_row,))
-            data = self.cur.fetchone()
+        if not current_song:
+            raise SongError("No song set")
 
-            # Was there a row to fetch?
-            if not data:
-                self.cur.execute("UPDATE lyrics_status SET current_song = ? WHERE name = ?", (None, self.name)) # empty current_song
-                print "Current song finished, initialize a new song with python bot.py --set-song and try again."
-                return
+        return current_song, current_row
 
-            # Row belongs to current song => return (title, lyric)-pair and increment row index in the status row.
-            elif not data[0] or data[0] == current_title:
-                self.cur.execute("UPDATE lyrics_status SET current_row = ? WHERE name = ?", (current_row + 1, self.name))
-                return (data[0], data[2])  # title (ie. data[0]) is !None only for the first line of each song
+    def get_next_lyric(self):
+        """Fetch the next lyric to be randomized. The next rowid to read is stored in the lyrics_status table.
+        Raise an error is the next database row doesn't belong to the current song anymore.
+        """
+        current_song, current_row = self.get_current_song_status()
+        with self.con:
+            self.cur.execute("SELECT title, search, verse FROM lyrics WHERE rowid = ?", (current_row,))
+            row_data = self.cur.fetchone()
 
-            # Row starts a new song => clear title from the status row and prompt for a song change.
-            elif data[0] != current_title:
-                self.cur.execute("UPDATE lyrics_status SET current_song = ? WHERE name = ?", (None, self.name))
-                print "Current song finished, initialize a new song with --set-song and try again."
-                return
+            # check if we're out of the whole table (ie. finished the last song of the table)
+            if not row_data:
+                self.set_song_status("", -1) # next call to get_current_song_status will raise an error unless a valid song name is set
+                raise SongError("Previous song finished")  # raise an error to stop execution
+
+            # still within the current song
+            elif not row_data[0] or row_data[0] == current_song:  # empty title denotes no song change
+                # store the next row back to the database and change self.current_row
+                self.set_song_status("", current_row + 1)
+                return (row_data[0], row_data[2])  # return (title, lyric) -tuple
+
+            # row belongs to the next song: store an empty value as current_song and raise an error to stop execution
+            elif row_data[0] != current_song:
+                self.set_song_status("", -1)
+                raise SongError("Previous song finished")
+
+    def set_song_status(self, song, rowid):
+        """Update lyrics_status table with the provided song and rowid."""
+        with self.con:
+            self.cur.execute("UPDATE lyrics_status SET current_song = ?, current_row = ? WHERE name = ?", (song, rowid, self.name))
 
     def set_song(self, search_term):
-        """Set the next song to be processed by get_next_lyric().
+        """Set the next song to be processed by get_next_lyric.
         Arg:
-            search_term (string): the song to process next, one of the values in the search
+            search_term (string): determines the song to process next, one of the values in the search
             column of the lyrics table.
         """
         with self.con:
@@ -319,15 +327,11 @@ class SongRandomizer(Randomizer):
 
             # Input didn't match to the table => print valid options on screen.
             if not row:
-                print "Invalid option."
-                valid = self.get_songs()  # opens another database connection! (is this bad?)
-                print "Valid options (case sensitive):"
-                for name in valid:
-                    print name
+                raise SongError("No such song")
 
-            # Update the status row with the title and start row index of the selected song.
+            # Update the status table
             else:
-                self.cur.execute("UPDATE lyrics_status SET current_song=?, current_row=? WHERE name=?", (row[1], row[0], self.name))
+                self.set_song_status(row[1], row[0])
                 print "Next song set to", search_term
 
     def get_songs(self):
@@ -338,11 +342,14 @@ class SongRandomizer(Randomizer):
             return [search[0] for search in data if search[0]] # drop empty strings
 
     def add_lyrics_status_entry(self):
-        """Add a new entry to the lyrics_status table for self.name if
-        not already present.
-        """
+        """Add an entry to the lyrics_status table for self.name."""
         with self.con:
-            try: # name is UNIQUE, return if self.name is already present
-                cur.execute("INSERT INTO lyrics_status(name) VALUES (?)", (self.name,))
+            try: # name is UNIQUE
+                self.cur.execute("INSERT INTO lyrics_status(name) VALUES (?)", (self.name,))
             except lite.IntegrityError as e:
                 return
+
+
+class SongError(Exception):
+    """Custom error for song processing related edge cases."""
+    pass
