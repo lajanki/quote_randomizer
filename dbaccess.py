@@ -3,161 +3,164 @@
 
 """
 A library module for general access points to quotes.db.
-
-
-TODO: Include lyrics part in find_invalid()
-
-changelog
-21.1.2017
-  * Finding invalid entries from quotes.sql now also looks for (quote, author)-pairs
-    with > 135 characters.
-10.1.2017
-  * Changed the way quotes.sql is executed: no more DROP TABLE followed by CREATE TABLE.
-  	when new data is inserted. This keeps the frequency data intact. The lyrics table remains unchanged.
-  * Finding suplicates within quotes.sql is now handled by parsing it as a text file.
-9.1.2017
-  * Minor tweaks to what's considered valid words to insert into the dictionary table:
-  	the only non-alphanumeric character allowed is "-". This prevents stuff like $21
-  	from being inserted. Also removed such words from the database.
-6.1 2017
-  * Added build_dictionary() which reads a pre tagged corpus from the nltk module
-    and inserts valid (word, tag) pairs to the database. The option to parse
-    quotes for the dictionary is now somewhat redundant, maybe remove in the future?
-  * Minor error handling changes in parse_for_dictionary() to reflect change that
-    (word, tag) pairs in the dictionary table are now unique.
-4.1.2017
-  * Added error handling to update_db() when multiples of the same quote is encoutered.
-26.7.2016
-  * Added normalize_tokens() to parse_for_dictionary() to prevent 
-	the "can't" -> ["ca", "n't"] behaviour of nltk.word_tokenize().
-  * Added some rejection tokens to parse_for_dictionary().
-11.7.2016
-  * Initial version.
+TODO: fix wild database connections
 """
 
-
+import os
+import sys
 import nltk
 import sqlite3 as lite
 
 
-
 path = "./"
+
 
 # Applicable nltk word classes for switching word.
 # Run this script with --tags switch to see descriptipns of all tags.
-CLASSES = ["JJ", "JJR", "JJS", "NN", "NNS", "RB", "RBR", "RBS", "VB", "VBN", "VBD", "VBG", "VBP", "VBZ" ]
+CLASSES = [
+    "JJ",
+    "JJR",
+    "JJS",
+    "NN",
+    "NNS",
+    "RB",
+    "RBR",
+    "RBS",
+    "VB",
+    "VBN",
+    "VBD",
+    "VBG",
+    "VBP",
+    "VBZ"
+]
 
-def update_db(quick=False):
-	"""Execute the contents of quotes.sql to update the database.
-	This function drops and refills the quotes and lyrics tables.
-	See quotes.sql for DROP TABLE commands.
-	By default, inserted quotes are also parsed for the dictionary.
-	No data is dropped from the dictionary.
-	Arg:
-		quick (boolean): whether to parse quotes and lyrics for dictionary
-	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
+def create_quote_database():
+    """Drop all current data from quotes.db and refill it from quotes.sql"""
+    os.remove("quotes.db")
+    con = lite.connect("quotes.db")
+    cur = con.cursor()
 
-	with con:
-		print "Executing quotes.sql, please wait..."
-		with open(path+"quotes.sql") as f:
-			lines = [line.rstrip("\n;").lstrip("\t") for line in f]
-			for sql in lines:
-				# quotes column is UNIQUE. Skip duplicate lines.
-				try:
-					cur.execute(sql)
-				except (lite.Warning, lite.IntegrityError) as e:
-					pass
+    with con:
+        cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0)")
+        cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")
+        cur.execute("CREATE TABLE lyrics (title TEXT, search TEXT UNIQUE, verse TEXT)")
+        cur.execute("CREATE TABLE lyrics_status (name TEXT UNIQUE, current_song TEXT, current_row INTEGER)")
 
-	invalid = find_invalid()
-	dupes = invalid["dupes"]
-	long_ = invalid["long"]
-	apostrophes = invalid["apostrophes"]
-	print "Done"
+    execute_sql("quotes.sql")
+    build_dictionary()
 
-	"""
-	if long_:
-		print "Found the following long quotes in quotes.sql:"
-		print long_
-	"""
+def create_song_database():
+    """Drop all current data from songs.db and refill it from songs.db."""
+    os.remove("songs.db")
+    con = lite.connect("songs.db")
+    cur = con.cursor()
 
-	if dupes:
-		print "Skipped the following duplicates:"
-		print dupes
+    execute_sql("songs.sql")  # contains CREATE TABLE statements
 
-	if apostrophes:
-		print "The following quotes contains a double apostrophe ('') where possibly a double quote (\") should be:"
-		print apostrophes
+def execute_sql(sql_file):
+    """Execute the contents of quotes.sql or songs.sql to update the corresponding database.
+    Arg:
+        sql_file (string): the file to execute, the correct database is determined from the filename.
+    """
+    db_file = os.path.splitext(sql_file)[0] + ".db"
 
-	# Check whether to parse quotes and lyrics for the dictionary.
-	if not quick:
-		print "Updating dictionary..."
-		cur.execute("SELECT quote FROM quotes")
-		rows = cur.fetchall()
-		for row in rows:
-			parse_for_dictionary(row[0])
+    con = lite.connect(db_file)
+    cur = con.cursor()
 
-	# Finally, show info on database size.
-	database_size()
-	print "Run 'python quote.py --tags' to see description of all tags."
+    with con:
+        print "Executing {}, please wait...".format(sql_file)
+        with open(sql_file) as f:
+            lines = [line.rstrip("\n;").lstrip("\t") for line in f]
+            for sql in lines:
+                # quotes column in quotes.db is UNIQUE, skip duplicate lines. This also skips
+                # existing lines when adding new quotes to the database via quotes.sql.
+                # songs.db may contain duplicated lyrics
+                try:
+                    cur.execute(sql)
+                except (lite.Warning, lite.IntegrityError) as e:
+                    pass
+                except Exception as e:
+                    print e
+                    print "Something went wrong, try rebuilding the database"
+                    sys.exit() # stop execution as soon as an unknown error occurs
 
+def list_invalid():
+    """List various invalid entries in quotes.sql.
+    TODO: add suppert for sons.sql?
+    """
+
+    invalid = find_invalid()
+    dupes = invalid["dupes"]
+    long_ = invalid["long"]
+    apostrophes = invalid["apostrophes"]
+    print "Done"
+
+    if long_:
+        print "Found the following long quotes in quotes.sql:"
+        print long_
+
+    if dupes:
+        print "Skipped the following duplicates:"
+        print dupes
+
+    if apostrophes:
+        print "The following quotes contains a double apostrophe ('') where possibly a double quote (\") should be:"
+        print apostrophes
 
 def parse_for_dictionary(s):
-	"""Parse given string for database dictionary. Exclude words already in the dictionary.
-	Args:
-		s (string): the string to parse
-	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
+    """Parse given string for database dictionary. Exclude words already in the dictionary.
+    Args:
+        s (string): the string to parse
+    """
+    con = lite.connect("quotes.db")
+    cur = con.cursor()
 
-	# Replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's].
-	tokens = normalize_tokens(nltk.word_tokenize(s))
+    # Replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's].
+    tokens = normalize_tokens(nltk.word_tokenize(s))
 
-	# Valid tokens to insert to the database:
-	#	1) may contain "-", otherwise alphanumeric
-	# 	2) len > 3
-	# Note: stripping words happen after tagging to ensure the correct tag is used.
-	tagged = nltk.pos_tag([word.lower() for word in tokens])
-	tagged = [token for token in tagged if (token[0].replace("-", "").isalnum() and len(token[0]) > 3) ]
+    # Valid tokens to insert to the database:
+    #    1) may contain "-", otherwise alphanumeric
+    #    2) len > 3
+    # Note: stripping words happen after tagging to ensure the correct tag is used.
+    tagged = nltk.pos_tag([word.lower() for word in tokens])
+    tagged = [token for token in tagged if (token[0].replace("-", "").isalnum() and len(token[0]) > 3) ]
 
-	if not tagged:
-		print "No valid tags in:"
-		print s
+    if not tagged:
+        print "No valid tags in:"
+        print s
 
-	# Store in database.
-	with con:
-		for word, tag in tagged:
-			if tag in CLASSES:
-				try:  # the (word, tag) needs to be unique
-					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
-				except lite.IntegrityError as e:
-					pass
-
+    # Store in database.
+    with con:
+        for word, tag in tagged:
+            if tag in CLASSES:
+                try:  # the (word, tag) needs to be unique
+                    cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
+                except lite.IntegrityError as e:
+                    pass
 
 def build_dictionary():
-	"""Builds the dictionary table by reading the tagged data from Brown corpus from the nltk module
-	and inserts that data to the database. This corpus has a total of ~ 1.1 million (word, tag) pairs
-	with ~ 42 000 valid pairs to enter in the database.
-	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
+    """Builds the dictionary table by reading the tagged data from Brown corpus from the nltk module
+    and inserts that data to the database. This corpus has a total of ~ 1.1 million (word, tag) pairs
+    with ~ 42 000 valid pairs to enter in the database.
+    """
+    con = lite.connect("quotes.db")
+    cur = con.cursor()
 
-	print "Building a dictionary from an internal dataset. This may take a while..."
-	tagged = nltk.corpus.brown.tagged_words()
-	# Strip multiples and words with invalid tags and characters.
-	# It's sligthly faster to first remove multiples and then remove invalid.
-	tagged = set(tagged)
-	tagged = [token for token in tagged if ( token[1] in CLASSES and token[0].replace("-", "").isalnum() and len(token[0]) > 3 )]
-	
-	print "Inserting " + str(len(tagged)) + " items to the database."
-	with con:
-		for word, tag in tagged:
-			if tag in CLASSES:
-				try:
-					cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
-				except lite.IntegrityError as e:
-					pass
+    print "Building a dictionary from an internal dataset. This may take a while..."
+    tagged = nltk.corpus.brown.tagged_words()
+    # Strip multiples and words with invalid tags and characters.
+    # It's sligthly faster to first remove multiples and then remove invalid.
+    tagged = set(tagged)
+    tagged = [token for token in tagged if ( token[1] in CLASSES and token[0].replace("-", "").isalnum() and len(token[0]) > 3 )]
+
+    print "Inserting " + str(len(tagged)) + " items to the database."
+    with con:
+        for word, tag in tagged:
+            if tag in CLASSES:
+                try:
+                    cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
+                except lite.IntegrityError as e:
+                    pass
 
 
 ####################
@@ -165,97 +168,89 @@ def build_dictionary():
 ####################
 
 def database_size():
-	"""Print information on the size of the database.
-	Used with --size switch.
-	"""
-	con = lite.connect(path+"quotes.db")
-	cur = con.cursor()
+    """Print information on the size of the database.
+    Used with --size switch.
+    """
+    con = lite.connect("quotes.db")
+    cur = con.cursor()
 
-	with con:
-		cur.execute("SELECT COUNT(quote) FROM quotes")
-		size = cur.fetchone()
-		print size[0], "quotes"
+    with con:
+        cur.execute("SELECT COUNT(quote) FROM quotes")
+        size = cur.fetchone()
+        print size[0], "quotes"
 
-		cur.execute("SELECT COUNT(*) FROM dictionary")
-		size = cur.fetchone()
-		print size[0], "words"
+        cur.execute("SELECT COUNT(*) FROM dictionary")
+        size = cur.fetchone()
+        print size[0], "words"
 
-		for item in CLASSES:
-			cur.execute("SELECT COUNT(word) FROM dictionary WHERE class = ?", (item,))
-			size = cur.fetchone()
-			print item, size[0]
+        for item in CLASSES:
+            cur.execute("SELECT COUNT(word) FROM dictionary WHERE class = ?", (item,))
+            size = cur.fetchone()
+            print item, size[0]
 
 
 def find_invalid():
-	"""Find various erroneous entries from the quotes part (lyrics are skipped for now) of quotes.sql:
-	  1 duplicates
-	  2 long (quote, author)-pairs
-	  3 uses of "'" as a quote character, (should only be used as an apostrophe)
-	Note: that finding long quotes is not entirely reliable as quotes.switch() affects quote length.
-	Return:
-		a dict of lists for each type of invalid entries.
-	"""
-	uniques = []
-	dupes = []
-	long_ = []
-	apostrophes = []
+    """Find various erroneous entries from the quotes part (lyrics are skipped for now) of quotes.sql (not the database!):
+      1 long (quote, author)-pairs
+      2 duplicates
+      3 uses of "'" as a quote character, (should only be used as an apostrophe)
+    Note: finding long quotes is not entirely reliable as the randomized quote may still be too long to tweet.
+    Return:
+        a dict of lists for each type of invalid entries.
+    """
+    long_ = []
+    apostrophes = []
+    dupes = []
+    seen = []
+    with open("quotes.sql") as f:
+        for line in f:
+            if "INSERT INTO lyrics_status" in line:  # break when the lyrics_status table data is encoutered
+                break
+            if line == "\n" or line.startswith("--"):  # skip empty lines and comments
+                continue
 
-	with open(path+"quotes.sql") as f:
-		for line in f:
-			if "INSERT INTO lyrics_status" in line:  # break when the lyrics_status table data is encoutered
-				break
-			if line == "\n" or line.startswith("--"):  # skip empty lines and comments
-				continue
+            # Strip the sql from the beginning and the end.
+            line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "(" !) to the beginning...
+            line = line.lstrip("'")  # remove the single quote separately, this way no actual quote characters are removed
+            line = line.rstrip("');\n" )  # remove sql characters and any whitespace from the end
+            # Split by "'," combination to get the individual items from the (quote, author)-pair
+            quote, author = line.split("',")
 
-			# Strip the sql from the beginning and the end.
-			line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "(" !) to the beginning...
-			line = line.lstrip("'")  # remove the single quote separately, this way no actual quote characters are removed
-			line = line.rstrip("');\n" )  # remove sql characters and any whitespace from the end
-			# Split by "'," combination to get the individual items from the (quote, author)-pair
-			quote, author = line.split("',")
+            if quote in seen:
+                dupes.append(quote)
+            seen.append(quote)
 
+            # Is it too long?
+            if len(quote + author) > 135:
+                long_.append(quote)
 
-			# Check if this quote has already been seen
-			if quote in uniques:
-				dupes.append(quote)
-			else:
-				uniques.append(quote)
-
-			# Is it too long?
-			if len(quote + author) > 135:
-				long_.append(quote)
-
-			# Look for quotes containing double apostrophes not followed by any of the valid suffixes
-			suffix = ("s", "t", "m", "d", "ll", "re", "ve")
-			#suffix = ["''" + s for s in suffix]
-			if "''" in quote and not any(["''"+s in quote for s in suffix]):
-				apostrophes.append(quote)
+            # Look for quotes containing double apostrophes not followed by any of the valid suffixes
+            suffix = ("s", "t", "m", "d", "ll", "re", "ve")
+            #suffix = ["''" + s for s in suffix]
+            if "''" in quote and not any(["''"+s in quote for s in suffix]):
+                apostrophes.append(quote)
 
 
-	return {"dupes": dupes, "long": long_, "apostrophes": apostrophes}
-
+    return {"dupes": dupes, "long": long_, "apostrophes": apostrophes}
 
 def normalize_tokens(tokens):
-	"""nltk.word_tokenize() will tokenize words using ' as an apostrophe into
-	two tokens: eg. "can't" -> ["can", "'t"].
-	This function normalizes tokens by reattaching the parts back together and
-	Returns the result as a tokenized list.
-	Arg:
-		tokens (list):  a tokenized list of a quote
-	Return:
-		a list of the normalized tokens"""
-	for idx, token in enumerate(tokens):
-		try:
-			if "'" in token:
-				tokens[idx-1] += tokens[idx]
-				tokens[idx] = "DEL"
+    """nltk.word_tokenize() will tokenize words using ' as an apostrophe into
+    two tokens: eg. "can't" -> ["can", "'t"].
+    This function normalizes tokens by reattaching the parts back together and
+    Returns the result as a tokenized list.
+    Arg:
+        tokens (list):  a tokenized list of a quote
+    Return:
+        a list of the normalized tokens"""
+    for idx, token in enumerate(tokens):
+        try:
+            if "'" in token:
+                tokens[idx-1] += tokens[idx]
+                tokens[idx] = "DEL"
 
-		# The first token contained "'". This shouldn't occur anyway.
-		except IndexError as e:
-			print e
+        # The first token contained "'". This shouldn't occur anyway.
+        except IndexError as e:
+            print e
 
-	normalized = [token for token in tokens if token != "DEL"]
-	return normalized
-
-
-
+    normalized = [token for token in tokens if token != "DEL"]
+    return normalized
