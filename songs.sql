@@ -1,6 +1,10 @@
 --song lyrics for the randomizer in separate tables
 
-CREATE TABLE song_status (table TEXT NOT NULL, current_row INTEGER);
+-- Status table for
+--  -user: name whose status to read (given to a SongRandomizer object)
+--  -song: one of the tables below
+--  -current_row: row index of the next row to read
+CREATE TABLE song_status (name TEXT NOT NULL UNIQUE, song TEXT, current_row INTEGER);
 
 --Californication
 CREATE TABLE [Red Hot Chili Peppers - Californication](verse TEXT NOT NULL)
@@ -96,7 +100,7 @@ INSERT INTO [The Zen of Python](verse) VALUES ('Namespaces are one honking great
 
 --Nights in white satin
 CREATE TABLE [Moody Blues - Nights in White Satin](verse TEXT NOT NULL)
-INSERT INTO [Moody Blues - Nights in White Satin](title, search, verse) VALUES ('Nights in white satin never reaching the end.');
+INSERT INTO [Moody Blues - Nights in White Satin](verse) VALUES ('Nights in white satin never reaching the end.');
 INSERT INTO [Moody Blues - Nights in White Satin](verse) VALUES ('Letters I''ve written never meaning to send.');
 INSERT INTO [Moody Blues - Nights in White Satin](verse) VALUES ('Beauty I''ve always missed With these eyes before.' );
 INSERT INTO [Moody Blues - Nights in White Satin](verse) VALUES ('Just what the truth is I can''t say any more.' );
@@ -113,7 +117,7 @@ INSERT INTO [Moody Blues - Nights in White Satin](verse) VALUES ('Cause I love y
 
 --What a Wonderful World
 CREATE TABLE [Louis Armstrong - What a Wonderful World](verse TEXT NOT NULL)
-INSERT INTO [Louis Armstrong - What a Wonderful World](verse) VALUES ('Louis Armstrong - What a Wonderful World', 'What a Wonderful World', 'I see trees of green, red roses too.');
+INSERT INTO [Louis Armstrong - What a Wonderful World](verse) VALUES ('I see trees of green, red roses too.');
 INSERT INTO [Louis Armstrong - What a Wonderful World](verse) VALUES ('I see them bloom for me and you and I think to myself what a wonderful world.' );
 INSERT INTO [Louis Armstrong - What a Wonderful World](verse) VALUES ('I see skies of blue and clouds of white. The bright blessed day, the dark sacred night.' );
 INSERT INTO [Louis Armstrong - What a Wonderful World](verse) VALUES ('And I think to myself what a wonderful world.' );
@@ -124,7 +128,7 @@ INSERT INTO [Louis Armstrong - What a Wonderful World](verse) VALUES ('And I thi
 
 --Behind Blue Eyes
 CREATE TABLE [Limp Bizkit - Behind Blue Eyes](verse TEXT NOT NULL)
-INSERT INTO [Limp Bizkit - Behind Blue Eyes](title, search, verse) VALUES ('No one knows what it''s like to be the bad man, to be the sad man. Behind blue eyes.');
+INSERT INTO [Limp Bizkit - Behind Blue Eyes](verse) VALUES ('No one knows what it''s like to be the bad man, to be the sad man. Behind blue eyes.');
 INSERT INTO [Limp Bizkit - Behind Blue Eyes](verse) VALUES ('And no one knows what it''s like to be hated, to be fated to telling only lies.' );
 INSERT INTO [Limp Bizkit - Behind Blue Eyes](verse) VALUES ('But my dreams they aren''t as empty as my conscience seems to be.' );
 INSERT INTO [Limp Bizkit - Behind Blue Eyes](verse) VALUES ('I have hours, only lonely. My love is vengeance that''s never free.' );

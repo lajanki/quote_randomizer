@@ -3,26 +3,16 @@
 
 """
 quote.py - A Random Quote Generator
-Picks a random actual quote or a fact from a database, chooses 1-3 words
+Picks an actual quote or a fact from a database, chooses 1-3 words
 and randomly switches them to new ones. Uses a natural language toolkit
 module (nltk) to tag words into classes in order to choose a right type
 of words to be replaced.
 
-Can also be used to work with song lyrics: the script reads lyrics line
-by line, randomizes them and outputs the result.
-
-Uses a database (quotes.db) to store and read quotes. The database consists
-of 3 tables:
-  * quotes: pairs of quotes and authors taken from real people, movies and
-    games
-  * lyrics: full lyrics to songs
-  * dictionary: a table of words parsed from the other tables.
+Can also be used to work with song lyrics: the script reads lyrics from another
+database line by line, randomizes them and outputs the result.
 """
 
 
-
-import sys
-import argparse
 import nltk
 import random
 import os.path
@@ -36,17 +26,17 @@ class Randomizer:
     def __init__(self, path = "./"):
         """Define database connections and a base path for data files."""
         self.path = path
-        self.con, self.cur = self.get_database_connection()
+        # create connection to quotes.db, this is common to by both QuoteRandomizer and SongRandomizer
+        self.con, self.cur = self.get_database_connection(path + "quotes.db")
 
-    def get_database_connection(self):
-        """Try to create a connection to the database. Raises an error if it doesn't exist."""
-        db_path = self.path + "quotes.db"
+    def get_database_connection(self, db_file):
+        """Try to create a connection to a database. Raises an error if it doesn't exist."""
 
         # lite.connect will create an empty database if one doesn't exist, raise an error instead
-        if not os.path.isfile(db_path):
-            raise IOError("Error Database quotes.db doesn't exist. Use --init to create it.")
+        if not os.path.isfile(db_file):
+            raise IOError("Error Database {} doesn't exist. Use --init to create it.".format(db_file))
 
-        con = lite.connect(db_path)
+        con = lite.connect(db_file)
         cur = con.cursor()
 
         return con, cur
@@ -136,18 +126,6 @@ class Randomizer:
         s = Randomizer.cleanup(s)
 
         return s
-
-    def create_database(self):
-        """Create the database tables and use dbaccess module to fill it."""
-        with self.con:
-            cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0)")
-            cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")
-            cur.execute("CREATE TABLE lyrics (title TEXT, search TEXT UNIQUE, verse TEXT)")
-            cur.execute("CREATE TABLE lyrics_status (name TEXT UNIQUE, current_song TEXT, current_row INTEGER)")
-
-        dbaccess.update_db()
-        dbaccess.build_dictionary()
-        parser.print_help()
 
     def generate(self):
         """Create a randomized string from a database entry. This method should be implemented in a subclass."""
@@ -258,6 +236,11 @@ class SongRandomizer(Randomizer):
         """
         Randomizer.__init__(self, path)
         self.name = name
+        # create new connection to the song database, don't overwrite existing connector to quotes.db!
+        self.song_con, self.song_cur = self.get_database_connection(path + "songs.db")
+        # add an entry into the song_status table for self.name,
+        # (ignored if one is already present)
+        self.add_song_status_entry()
 
     def generate(self):
         """Fetch a lyric and randomize it."""
@@ -269,70 +252,63 @@ class SongRandomizer(Randomizer):
         return (title, randomized)
 
     def get_current_song_status(self):
-        """Get current song status data from song_status table. Raises an Error if no song
+        """Get current song status data (table name and row index) from song_status table. Raises an Error if no song
         has been set (ie. previous song has been fully processed and waiting for call to start the next song).
         """
-        with self.con:
+        with self.song_con:
             # Read current song status from lyrics_status table.
-            self.cur.execute("SELECT current_song, current_row FROM lyrics_status WHERE name = ?", (self.name,))
-            status = self.cur.fetchone()
+            self.song_cur.execute("SELECT song, current_row FROM song_status WHERE name = ?", (self.name,))
+            status = self.song_cur.fetchone()
 
-        current_song = status[0]  # raises TypeError is self.name is not a valid database entry name
-        current_row = status[1]
-
-        if not current_song:
+        if not status:
             raise SongError("No song set")
 
-        return current_song, current_row
+        table = status[0]
+        row = status[1]
+
+        if not table:
+            raise SongError("No song set")
+
+        return table, row
 
     def get_next_lyric(self):
-        """Fetch the next lyric to be randomized. The next rowid to read is stored in the lyrics_status table.
-        Raise an error is the next database row doesn't belong to the current song anymore.
+        """Fetch the next lyric to be randomized. The current song and the next rowid to read is read from the song_status table.
+        Raise an error if the current song has been fully processed (or not set).
         """
-        current_song, current_row = self.get_current_song_status()
-        with self.con:
-            self.cur.execute("SELECT title, search, verse FROM lyrics WHERE rowid = ?", (current_row,))
-            row_data = self.cur.fetchone()
+        table, row = self.get_current_song_status() # get table name and row inedx of the table to read
+        with self.song_con:
+            sql = "SELECT verse FROM \"{}\" WHERE rowid = ?".format(table) # table names can't be targeted for a parameter replacements :(
+            self.song_cur.execute(sql, (row,))
+            row_data = self.song_cur.fetchone()
 
-            # check if we're out of the whole table (ie. finished the last song of the table)
+            # is the song already fully processed?
             if not row_data:
-                self.set_song_status("", -1) # next call to get_current_song_status will raise an error unless a valid song name is set
+                self.set_song_status("", -1) # empty song_status data for clarity
                 raise SongError("Previous song finished")  # raise an error to stop execution
 
             # still within the current song
-            elif not row_data[0] or row_data[0] == current_song:  # empty title denotes no song change
-                # store the next row back to the database and change self.current_row
-                self.set_song_status("", current_row + 1)
-                return (row_data[0], row_data[2])  # return (title, lyric) -tuple
-
-            # row belongs to the next song: store an empty value as current_song and raise an error to stop execution
-            elif row_data[0] != current_song:
-                self.set_song_status("", -1)
-                raise SongError("Previous song finished")
-
-    def set_song_status(self, song, rowid):
-        """Update lyrics_status table with the provided song and rowid."""
-        with self.con:
-            self.cur.execute("UPDATE lyrics_status SET current_song = ?, current_row = ? WHERE name = ?", (song, rowid, self.name))
-
-    def set_song(self, search_term):
-        """Set the next song to be processed by get_next_lyric.
-        Arg:
-            search_term (string): determines the song to process next, one of the values in the search
-            column of the lyrics table.
-        """
-        with self.con:
-            self.cur.execute("SELECT rowid, title FROM lyrics WHERE search = ?", (search_term,))
-            row = self.cur.fetchone()
-
-            # Input didn't match to the table => print valid options on screen.
-            if not row:
-                raise SongError("No such song")
-
-            # Update the status table
             else:
-                self.set_song_status(row[1], row[0])
-                print "Next song set to", search_term
+                # update row index in song_status
+                #self.set_song_status(row + 1)
+                self.set_song_status(table, row + 1)
+                return (table, row_data)  # return (title, lyric) -tuple
+
+    def set_song_status(self, song, rowid = 1):
+        """Update song_status table with the provided song and rowid.
+        Note: caller should handle input validation.
+        """
+        with self.song_con:
+            self.song_cur.execute("UPDATE song_status SET song = ?, current_row = ? WHERE name = ?", (song, rowid, self.name))
+
+    def add_song_status_entry(self):
+        """Add an entry to the lyrics_status table for self.name."""
+        with self.song_con:
+            try:
+                # name is UNIQUE, song is NOT NULL, insert dummy data for song and current_row to denote invalid entry
+                self.song_cur.execute("INSERT INTO song_status(name) VALUES (?)", (self.name,))
+            except lite.IntegrityError as e:
+                print "Using existing song_status entry for {}".format(self.name)
+
 
     def get_songs(self):
         """Return a list of valid search terms to use with --set-song."""
@@ -341,13 +317,7 @@ class SongRandomizer(Randomizer):
             data = self.cur.fetchall()
             return [search[0] for search in data if search[0]] # drop empty strings
 
-    def add_lyrics_status_entry(self):
-        """Add an entry to the lyrics_status table for self.name."""
-        with self.con:
-            try: # name is UNIQUE
-                self.cur.execute("INSERT INTO lyrics_status(name) VALUES (?)", (self.name,))
-            except lite.IntegrityError as e:
-                return
+
 
 
 class SongError(Exception):
