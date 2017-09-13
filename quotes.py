@@ -34,7 +34,7 @@ class Randomizer:
 
         # lite.connect will create an empty database if one doesn't exist, raise an error instead
         if not os.path.isfile(db_file):
-            raise IOError("Error Database {} doesn't exist. Use --init to create it.".format(db_file))
+            raise IOError("Error Database {} doesn't exist.".format(db_file))
 
         con = lite.connect(db_file)
         cur = con.cursor()
@@ -244,12 +244,10 @@ class SongRandomizer(Randomizer):
 
     def generate(self):
         """Fetch a lyric and randomize it."""
-        lyric_record = self.get_next_lyric()
-        title = lyric_record[0]
-        lyric = lyric_record[1]
+        song, lyric = self.get_next_lyric()
 
         randomized = self.randomize_string(lyric)
-        return (title, randomized)
+        return (song, randomized)
 
     def get_current_song_status(self):
         """Get current song status data (table name and row index) from song_status table. Raises an Error if no song
@@ -291,7 +289,7 @@ class SongRandomizer(Randomizer):
                 # update row index in song_status
                 #self.set_song_status(row + 1)
                 self.set_song_status(table, row + 1)
-                return (table, row_data)  # return (title, lyric) -tuple
+                return (table, row_data[0])  # return (title, lyric) -tuple
 
     def set_song_status(self, song, rowid = 1):
         """Update song_status table with the provided song and rowid.
@@ -309,13 +307,12 @@ class SongRandomizer(Randomizer):
             except lite.IntegrityError as e:
                 print "Using existing song_status entry for {}".format(self.name)
 
-
     def get_songs(self):
-        """Return a list of valid search terms to use with --set-song."""
-        with self.con:
-            self.cur.execute("SELECT search FROM lyrics")
-            data = self.cur.fetchall()
-            return [search[0] for search in data if search[0]] # drop empty strings
+        """Return a list of valid song names to process, ie, the names of the tables in songs.db."""
+        with self.song_con:
+            self.song_cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            data = self.song_cur.fetchall()
+            return [table_name[0] for table_name in data if table_name[0] != "song_status"] # drop song_status table
 
 
 
