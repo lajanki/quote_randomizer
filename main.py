@@ -4,7 +4,7 @@
 """A runnable interface to quotes.py. Prints generated quotes/songs on screen."""
 
 import quotes
-import dbaccess
+import dbcontroller
 import nltk
 import argparse
 import sys
@@ -12,7 +12,7 @@ import sys
 def main(args):
     """Process command line arguments."""
     if args.build_quote_database:
-        build_quote_database()
+        build_quote_database(args.build_quote_database)
 
     elif args.build_song_database:
         build_song_database()
@@ -31,7 +31,7 @@ def main(args):
 
     elif args.size:
         print "quotes.db contains:"
-        dbaccess.database_size()
+        dbcontroller.database_size()
 
     elif args.tags:
         nltk.help.upenn_tagset()
@@ -43,7 +43,7 @@ def main(args):
 def build_quote_database(mode):
     """Drop all existing data from quotes.db refill it by executing quotes.sql."""
     # check for invalid entries in quotes.sql before creating the database
-    invalid = dbaccess.find_invalid()
+    invalid = dbcontroller.find_invalid()
     critical = invalid["dupes"] + invalid["dupes"]
     if critical:
         print """ERROR: found the following invalid entries in quotes.sql.
@@ -53,7 +53,7 @@ def build_quote_database(mode):
         sys.exit()
 
     print "Creating quotes.db"
-    dbaccess.create_quote_database()
+    dbcontroller.create_quote_database()
 
     if mode == "full":
         print "Parsing quotes for the dictionary, this may take a while..."
@@ -68,50 +68,59 @@ def build_song_database():
     TODO: switch for optional dictionary parsing?
     """
     print "Creating songs.db"
-    dbaccess.create_song_database()
+    dbcontroller.create_song_database()
 
 def randomize_quote():
     """Create a new randomized quote or a fact."""
-    randomizer = quotes.QuoteRandomizer()
-    quote, author = randomizer.generate()
-    print quote + "\n--" + author
+    try:
+        randomizer = quotes.QuoteRandomizer()
+        quote, author = randomizer.generate()
+        print quote + "\n--" + author
+    except IOError as err:
+        print "ERROR: database doesn't exist, create it with --build-quote-database"
 
 def randomize_fact():
     """Create a new randomized fact."""
-    randomizer = quotes.QuoteRandomizer()
-    fact, _ = randomizer.get_fact()
-    randomized = randomizer.randomize_string(fact)
-    print fact
+    try:
+        randomizer = quotes.QuoteRandomizer()
+        fact, _ = randomizer.get_fact()
+        randomized = randomizer.randomize_string(fact)
+        print fact
+    except IOError as err:
+        print "ERROR: database doesn't exist, create it with --build-quote-database"
 
 def randomize_lyric():
     """Randomize the next lyric for the default song randomizer (ie. name == song_randomizer)"""
-    randomizer = quotes.SongRandomizer()
     try:
+        randomizer = quotes.SongRandomizer()
         title, lyric = randomizer.generate()
         print lyric
     except quotes.SongError as err:
-        print "Previous song finished. User --set-song to initialize the next song and try again."
-        raise
+        print "Previous song finished or no song set. Use --set-song to initialize the next song and try again."
+    except IOError as err:
+        print "ERROR: database doesn't exist, create it with --build-song-database"
 
 def set_song(song):
     """Set the next song to be processed by --song."""
-    randomizer = quotes.SongRandomizer()
+    try:
+        randomizer = quotes.SongRandomizer()
 
-    # check input is a valid table in songs.db
-    valid = randomizer.get_songs()
-    if song == "list":
-        for name in valid:
-            print name
+        # check input is a valid table in songs.db
+        valid = randomizer.get_songs()
+        if song == "list":
+            for name in valid:
+                print name
 
-    elif song not in valid:
-        """Invalid entry, valid song names are:"""
-        for name in valid:
-            print name
+        elif song not in valid:
+            print "ERROR: invalid entry, valid song names are:"
+            for name in valid:
+                print name
 
-    else:
-        randomizer.set_song_status(song)
-        print "Current song set to {}. Use --song to start processing it.".format(song)
-
+        else:
+            randomizer.set_song_status(song)
+            print "Current song set to {}. Use --song to start processing it.".format(song)
+    except IOError as err:
+        print "ERROR: database doesn't exist, create it with --build-song-database"
 
 
 
