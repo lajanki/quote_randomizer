@@ -242,8 +242,9 @@ class SongRandomizer(Randomizer):
     so whole songs are processed in order.
     Status of the current song (for a given SongRandomizer) is stored in a separate lyrics_status tables
     with the schema
-        CREATE TABLE lyrics_status (name TEXT UNIQUE, current_song TEXT, current_row INTEGER);
-    where name is a name given to the SongRandomizer and current_row is a row index to the lyrics table.
+        CREATE TABLE song_status (name TEXT UNIQUE, song TEXT, current_row INTEGER);
+    where name is a name given to the SongRandomizer and current_row is a row index to the the next lyrics
+    in the table determined by song.
     """
 
     def __init__(self, name = "song_randomizer", path = "./"):
