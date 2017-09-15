@@ -18,10 +18,26 @@ import random
 import os.path
 import sqlite3 as lite
 
-import dbaccess
-
 
 class Randomizer:
+
+    # valid pos-tags for words to change
+    CLASSES = [
+        "JJ",
+        "JJR",
+        "JJS",
+        "NN",
+        "NNS",
+        "RB",
+        "RBR",
+        "RBS",
+        "VB",
+        "VBN",
+        "VBD",
+        "VBG",
+        "VBP",
+        "VBZ"
+    ]
 
     def __init__(self, path = "./"):
         """Define database connections and a base path for data files."""
@@ -112,7 +128,7 @@ class Randomizer:
 
         # format a list of (idx, word, tag) tuples of valid tokens in tagged
         valid = [ (idx, item[0], item[1]) for idx, item in enumerate(tagged)
-            if not any(token in item[0] for token in invalid_tokens) and item[1] in dbaccess.CLASSES ]
+            if not any(token in item[0] for token in invalid_tokens) and item[1] in Randomizer.CLASSES ]
 
         if not valid:
             raise ValueError("Error: no valid words to change.\n" + string)
