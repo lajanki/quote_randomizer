@@ -25,8 +25,6 @@ def create_quote_database():
     with con:
         cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0)")
         cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")
-        cur.execute("CREATE TABLE lyrics (title TEXT, search TEXT UNIQUE, verse TEXT)")
-        cur.execute("CREATE TABLE lyrics_status (name TEXT UNIQUE, current_song TEXT, current_row INTEGER)")
 
     execute_sql("quotes.sql")
     build_dictionary()
