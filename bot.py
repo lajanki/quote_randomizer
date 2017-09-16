@@ -3,19 +3,11 @@
 
 """
 bot.py
-Tweets quotes randomized by quotes.py
-
-
-Change log:
-21.3.2017
- *  Small changes to how song lyrics are processed to reflect the changes in quotes.py.
-17.3.2017
- *  Initial version.
+Tweets quotes randomized by quotes.py.
+Note: unlike main.py, this scripts provides little error checking. Database files are expected to exist
+and generating lyrics will ungracefully exit if there is no next line to read.
 """
 
-
-
-import sys
 import twython
 import json
 import argparse
@@ -23,77 +15,91 @@ import logging
 
 import quotes
 
+logging.basicConfig(filename = "./quotes.log", format="%(asctime)s %(message)s", level=logging.INFO)
+randomizer = quotes.QuoteRandomizer
+
+def generate_randomized_message(mode):
+    """Generate a radom quote or a song lyric using a corresponding Randomizer.
+    Arg:
+        mode (string): the type of message to generate, 'quote' for quote or a fact,
+          or 'lyric' for a song lyric.
+    Return
+        the generated message
+    """
+    if mode == "quote":
+        randomizer = quotes.QuoteRandomizer()
+        quote, author = randomizer.generate()
+
+        if author == "fact":
+            msg = "Random non-fact:\n" + quote
+        else:
+            msg = quote + "\n" + "--" + author
+
+    elif mode == "song":
+        randomizer = quotes.SongRandomizer(name = "bot")
+        # Randomze the next lyric. This raises (an uncaught!) SongError if the current song is fully processed
+        # or no song has been set. In such case The song needs to be manually changed with the --set-song switch
+        # before this does anything.
+        song, lyric, row = randomizer.get_next_lyric()
+        randomized = randomizer.randomize_string(lyric)
+
+        # add the title to the first lyric
+        if row == 1:
+            msg = song + "\n" + lyric
+        else:
+            msg = lyric
+
+    else:
+        raise ValueError("Invalid mode, recognized values are 'quote' and 'song'")
+
+    return msg
+
+def tweet(msg):
+    """Tweets a message"""
+    with open("./keys.json") as f:
+        data = json.load(f)
+        API_KEY = data["API_KEY"]
+        API_SECRET = data["API_SECRET"]
+        OAUTH_TOKEN = data["OAUTH_TOKEN"]
+        OAUTH_SECRET = data["OAUTH_SECRET"]
+
+    twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
+    twitter.update_status(status = msg)
+    logging.info(msg)
+
+def set_song(song):
+    """Set the next song to be processed by --song."""
+    randomizer = quotes.SongRandomizer(name = "bot")
+
+    # check input is a valid table in songs.db
+    valid = randomizer.get_songs()
+    if song == "list":
+        for name in valid:
+            print name
+
+    elif song not in valid:
+        print "ERROR: invalid entry, valid song names are:"
+        for name in valid:
+            print name
+
+    else:
+        randomizer.set_song_status(song)
+        print "Current song set to {}. Use --tweet song to start tweeting".format(song)
+
+
 
 
 if __name__ == "__main__":
-	randomizer = quotes.Randomizer(name = "bot")
-	logging.basicConfig(filename = randomizer.path + "quotes.log", format="%(asctime)s %(message)s", level=logging.INFO)
+    parser = argparse.ArgumentParser(description="A Twitterbot for randomized quotes.")
+    parser.add_argument("--tweet", metavar="mode", help="Generates and tweets a [quote] or a [song] lyric.", choices = ["quote", "song"])
+    parser.add_argument("--set-song", metavar="song", help="""
+        Sets the given song to be the next one read by --tweet song. Use 'list' to see valid choices.""")
+    args = parser.parse_args()
+    #print args
 
+    if args.tweet:
+        msg = generate_randomized_message(args.tweet)
+        tweet(msg)
 
-	parser = argparse.ArgumentParser(description="A quote randomizer.")
-	parser.add_argument("--tweet", metavar="mode", help="Generates a [quote] or a [song] lyric and posts it to Twitter. Requires access tokens and API keys from Twitter.")
-	parser.add_argument("--set-song", metavar="song", default="list", help="Sets the given song to be the next one read by --tweet song. Use [list] to see valid choices.")
-
-	args = parser.parse_args()
-	#print args
-
-
-	#=========#
-	# --tweet #
-	#=========#
-	if args.tweet:
-		msg = ""
-		mode = args.tweet
-		if mode not in ["quote", "song"]:
-			print "Error: invalid mode, please use either 'quote' or 'song'."
-			sys.exit()
-
-		# Format the message of the tweet based on whether the database item was a quote or a fact.
-		if mode == "quote":
-			quote = randomizer.get_quote()
-			randomized_quote = randomizer.randomize(quote)
-
-			if randomized_quote[1] == "fact":
-				msg = "Random non-fact:\n" + randomized_quote[0]
-			else:
-				msg = randomized_quote[0] + "\n" + "--" + randomized_quote[1]
-
-		elif mode == "song":
-			title, lyric = randomize_lyric()
-
-			if title:
-				msg = title + "\n" + lyric
-			else:
-				msg = lyric
-
-
-		with open(randomizer.path+"keys.json") as f:
-			data = json.load(f)
-			API_KEY = data["API_KEY"]
-			API_SECRET = data["API_SECRET"]
-			OAUTH_TOKEN = data["OAUTH_TOKEN"]
-			OAUTH_SECRET = data["OAUTH_SECRET"]
-
-		twitter = twython.Twython(API_KEY, API_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
-		twitter.update_status(status = msg)
-		logging.info(msg)
-
-	#============#
-	# --set song #
-	#============#
-	elif args.set_song:
-		if args.set_song == "list":
-			for name in randomizer.get_songs():
-				print name
-
-		else:
-			randomizer.set_song(args.set_song)
-
-
-
-
-
-
-
-
-
+    elif args.set_song:
+        set_song(args.set_song)
