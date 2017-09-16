@@ -80,17 +80,21 @@ class Randomizer:
         with self.con:
             for token in tokens_to_change:
                 self.cur.execute("SELECT word  FROM dictionary WHERE class = ? AND word != ? ORDER BY RANDOM()", (token[2], token[1]))
-                db_word = self.cur.fetchone()[0]
+                try:
+                    db_word = self.cur.fetchone()[0]  # the dictionary mat not have a replacing word
 
-                # capitalize the word if necessary:
-                if token[1] == token[1].upper():  # the whole word should be capitalized
-                    db_word = db_word.upper()
+                    # capitalize the word if necessary:
+                    if token[1] == token[1].upper():  # the whole word should be capitalized
+                        db_word = db_word.upper()
 
-                elif token[1] == token[1].capitalize(): # only the first letter is capitalized
-                    db_word = db_word.capitalize()
+                    elif token[1] == token[1].capitalize(): # only the first letter is capitalized
+                        db_word = db_word.capitalize()
 
-                new_word_token = (token[0], db_word)  # (idx, word) -tuple
-                new_words.append(new_word_token)
+                    new_word_token = (token[0], db_word)  # (idx, word) -tuple
+                    new_words.append(new_word_token)
+
+                except TypeError as err:
+                    new_words.append( (token[0], "NA") )
 
         return new_words
 
@@ -261,7 +265,7 @@ class SongRandomizer(Randomizer):
 
     def generate(self):
         """Fetch a lyric and randomize it."""
-        song, lyric = self.get_next_lyric()
+        song, lyric, _ = self.get_next_lyric()
 
         randomized = self.randomize_string(lyric)
         return (song, randomized)
@@ -306,7 +310,7 @@ class SongRandomizer(Randomizer):
                 # update row index in song_status
                 #self.set_song_status(row + 1)
                 self.set_song_status(table, row + 1)
-                return (table, row_data[0])  # return (title, lyric) -tuple
+                return (table, row_data[0], row)  # return (title, lyric, row index) -tuple
 
     def set_song_status(self, song, rowid = 1):
         """Update song_status table with the provided song and rowid.

@@ -191,7 +191,8 @@ class SongRandomizerTestCase(unittest.TestCase):
         """Does n+1 calls to get_next_lyric raise an error to denote empty song?"""
         self.randomizer.set_song_status("The Beatles - Yesterday")  # 8 lines, 9th call to get_next_lyric should raise SongError
         for i in range(8):
-            title, lyric = self.randomizer.get_next_lyric()
+            title, lyric, row = self.randomizer.get_next_lyric()
+            self.assertEqual(row, i+1)  # table rowindex should match i+1
 
         # 9th call should raise error
         self.assertRaises(quotes.SongError, self.randomizer.get_next_lyric)
