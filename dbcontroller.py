@@ -63,37 +63,6 @@ def execute_sql(sql_file):
                     print "Something went wrong, try rebuilding the database"
                     sys.exit() # stop execution as soon as an unknown error occurs
 
-def parse_for_dictionary(s):
-    """Parse given string for database dictionary. Exclude words already in the dictionary.
-    Args:
-        s (string): the string to parse
-    """
-    con, cur = get_connection("quotes.db")
-
-    # Replace occurances of ' for easier handling: nltk will tokenize words with ' as two tokens: let's -> [let, 's].
-    tokens = nltk.word_tokenize(s)
-    tokens = quotes.Randomizer.normalize_tokens(tokens)
-
-    # Valid tokens to insert to the database:
-    #    1) may contain "-", otherwise alphanumeric
-    #    2) len > 3
-    # Note: stripping words happen after tagging to ensure the correct tag is used.
-    tagged = nltk.pos_tag([word.lower() for word in tokens])
-    tagged = [token for token in tagged if (token[0].replace("-", "").isalnum() and len(token[0]) > 3) ]
-
-    if not tagged:
-        print "No valid tags in:"
-        print s
-
-    # Store in database.
-    with con:
-        for word, tag in tagged:
-            if tag in CLASSES:
-                try:  # the (word, tag) needs to be unique
-                    cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
-                except lite.IntegrityError as e:
-                    pass
-
 def build_dictionary():
     """Builds the dictionary table by reading the tagged data from Brown corpus from the nltk module
     and inserts that data to the database. This corpus has a total of ~ 1.1 million (word, tag) pairs
@@ -117,6 +86,49 @@ def build_dictionary():
                 except lite.IntegrityError as e:
                     pass
 
+def parse_table_for_dictionary():
+    """Parse the quotes table for words to add to the dictionary table."""
+    con, cur = get_connection("quotes.db")
+
+    new_tokens = []
+    with con:
+        cur.execute("SELECT quote FROM quotes")
+        quotes = cur.fetchall()
+
+        for quote in quotes:
+            tagged = pos_tag_string(quote[0])
+            for item in tagged:
+                new_tokens.append(item)
+
+        # strip multiples
+        new_tokens = list(set(new_tokens))
+
+        # add to the dictionary
+        try:
+            cur.executemany("INSERT INTO dictionary(word, class) VALUES(?, ?)", new_tokens)
+        except lite.IntegrityError as e:
+            pass
+
+def parse_string_for_dictionary(s):
+    """Parse given string for database dictionary. Exclude words already in the dictionary.
+    Args:
+        s (string): the string to parse
+    """
+    con, cur = get_connection("quotes.db")
+
+    tagged = pos_tag_string(s)
+    if not tagged:
+        print "No valid tags in:"
+        print s
+
+    # Store in database.
+    with con:
+        for word, tag in tagged:
+            if tag in CLASSES:
+                try:  # the (word, tag) needs to be unique
+                    cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
+                except lite.IntegrityError as e:
+                    pass
 
 #==================================================================
 # Helper functions #
@@ -128,6 +140,19 @@ def get_connection(db_file):
     cur = con.cursor()
 
     return con, cur
+
+def pos_tag_string(s):
+    """Use nltk to pos-tag a string. Strips invalid and short words.
+    Valid tokens to insert to the database:
+        1) may contain "-", otherwise alphanumeric
+        2) len > 3
+    """
+    tokens = nltk.word_tokenize(s)
+    tokens = quotes.Randomizer.normalize_tokens(tokens) # stich apostrophes back: let's -> [let, 's].
+    tagged = nltk.pos_tag([word.lower() for word in tokens])
+    tagged = [token for token in tagged if (token[0].replace("-", "").isalnum() and len(token[0]) > 3) ]
+
+    return tagged
 
 def database_size():
     """Print information on the size of the database.
@@ -190,25 +215,3 @@ def find_invalid():
                 apostrophes.append(quote)
 
     return {"dupes": dupes, "long": long_, "apostrophes": apostrophes}
-
-def normalize_tokens(tokens):
-    """nltk.word_tokenize() will tokenize words using ' as an apostrophe into
-    two tokens: eg. "can't" -> ["can", "'t"].
-    This function normalizes tokens by reattaching the parts back together and
-    Returns the result as a tokenized list.
-    Arg:
-        tokens (list):  a tokenized list of a quote
-    Return:
-        a list of the normalized tokens"""
-    for idx, token in enumerate(tokens):
-        try:
-            if "'" in token:
-                tokens[idx-1] += tokens[idx]
-                tokens[idx] = "DEL"
-
-        # The first token contained "'". This shouldn't occur anyway.
-        except IndexError as e:
-            print e
-
-    normalized = [token for token in tokens if token != "DEL"]
-    return normalized

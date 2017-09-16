@@ -40,10 +40,11 @@ def generate_randomized_message(mode):
         # Randomze the next lyric. This raises (an uncaught!) SongError if the current song is fully processed
         # or no song has been set. In such case The song needs to be manually changed with the --set-song switch
         # before this does anything.
-        song, lyric = randomizer.generate()
+        song, lyric, row = randomizer.get_next_lyric()
+        randomized = randomizer.randomize_string(lyric)
 
         # add the title to the first lyric
-        if first_row:
+        if row == 1:
             msg = song + "\n" + lyric
         else:
             msg = lyric

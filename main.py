@@ -56,12 +56,8 @@ def build_quote_database(mode):
     dbcontroller.create_quote_database()
 
     if mode == "full":
-        print "Parsing quotes for the dictionary, this may take a while..."
-        # TODO: parsing
-        # 1 get quotes from db
-        # 2 pos-tag separately
-        # 3 group tagged words to a dict
-        # 4 insert the lists to the dictionary
+        print "Adding quotes to the dictionary, this may take a while..."
+        dbcontroller.parse_table_for_dictionary()
 
 def build_song_database():
     """Drop all existing data from songs.db and refill it by executing songs.sql.
