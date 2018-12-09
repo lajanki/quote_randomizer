@@ -15,11 +15,15 @@ database line by line, randomizes them and outputs the result.
 
 import nltk
 import random
+import json
 import os.path
 import sqlite3 as lite
 
+from collections import defaultdict
+from nltk.corpus import brown
 
-class Randomizer:
+
+class Randomizer(object):
 
     # valid pos-tags for words to change
     CLASSES = [
@@ -39,7 +43,7 @@ class Randomizer:
         "VBZ"
     ]
 
-    def __init__(self, path = "./"):
+    def __init__(self, path="./"):
         """Define database connections and a base path for data files."""
         self.path = path
         # create connection to quotes.db, this is common to by both QuoteRandomizer and SongRandomizer
@@ -60,7 +64,7 @@ class Randomizer:
     def get_change_degree(self, tokens):
         """Given a tokenized string, determine the number of words to change."""
         if len(tokens) < 4:
-            return 1 # for short strings only change 1 word
+            return 1  # for short strings only change 1 word
 
         rand = random.random()
         if rand <= 0.65:
@@ -79,7 +83,8 @@ class Randomizer:
         new_words = []
         with self.con:
             for token in tokens_to_change:
-                self.cur.execute("SELECT word  FROM dictionary WHERE class = ? AND word != ? ORDER BY RANDOM()", (token[2], token[1]))
+                self.cur.execute(
+                    "SELECT word  FROM dictionary WHERE class = ? AND word != ? ORDER BY RANDOM()", (token[2], token[1]))
                 try:
                     db_word = self.cur.fetchone()[0]  # the dictionary mat not have a replacing word
 
@@ -87,14 +92,14 @@ class Randomizer:
                     if token[1] == token[1].upper():  # the whole word should be capitalized
                         db_word = db_word.upper()
 
-                    elif token[1] == token[1].capitalize(): # only the first letter is capitalized
+                    elif token[1] == token[1].capitalize():  # only the first letter is capitalized
                         db_word = db_word.capitalize()
 
                     new_word_token = (token[0], db_word)  # (idx, word) -tuple
                     new_words.append(new_word_token)
 
                 except TypeError as err:
-                    new_words.append( (token[0], "NA") )
+                    new_words.append((token[0], "NA"))
 
         return new_words
 
@@ -131,16 +136,18 @@ class Randomizer:
         ]
 
         # format a list of (idx, word, tag) tuples of valid tokens in tagged
-        valid = [ (idx, item[0], item[1]) for idx, item in enumerate(tagged)
-            if not any(token in item[0] for token in invalid_tokens) and item[1] in Randomizer.CLASSES ]
+        valid = [(idx, item[0], item[1]) for idx, item in enumerate(tagged)
+                 if not any(token in item[0] for token in invalid_tokens) and item[1] in Randomizer.CLASSES]
 
         if not valid:
             raise ValueError("Error: no valid words to change.\n" + string)
 
         # determine the words to change, fetch matching words from the database and make the switch
         change_degree = self.get_change_degree(valid)
-        words_to_change = random.sample(valid, change_degree) # list of (idx, word, tag) tuples of words from the original string
-        replacing_words = self.choose_replacing_words(words_to_change) # list of (idx, word) tuples of new words
+        # list of (idx, word, tag) tuples of words from the original string
+        words_to_change = random.sample(valid, change_degree)
+        replacing_words = self.choose_replacing_words(
+            words_to_change)  # list of (idx, word) tuples of new words
         tokens = self.switch_word_tokens(tokens, replacing_words)
         s = " ".join(tokens)
         s = Randomizer.cleanup(s)
@@ -150,7 +157,6 @@ class Randomizer:
     def generate(self):
         """Create a randomized string from a database entry. This method should be implemented in a subclass."""
         pass
-
 
     @staticmethod
     def normalize_tokens(tokens):
@@ -168,7 +174,7 @@ class Randomizer:
                     tokens[idx-1] += tokens[idx]
                     tokens[idx] = "DEL"
             except IndexError as e:
-                print e
+                print(e)
 
         normalized = [token for token in tokens if token != "DEL"]
         return normalized
@@ -194,7 +200,7 @@ class Randomizer:
             "https: ": "https:",
             "http: ": "http:"
         }
-        for old, new in punctuation.iteritems():
+        for old, new in punctuation.items():
             s = s.replace(old, new)
 
         return s
@@ -203,7 +209,7 @@ class Randomizer:
 class QuoteRandomizer(Randomizer):
     """Randomizer for quotes and facts."""
 
-    def __init__(self, path = "./"):
+    def __init__(self, path="./"):
         Randomizer.__init__(self, path)
 
     def generate(self):
@@ -235,7 +241,8 @@ class QuoteRandomizer(Randomizer):
             (fact, "fact") tuple
         """
         with self.con:
-            self.cur.execute("SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
+            self.cur.execute(
+                "SELECT * FROM quotes WHERE author=? ORDER BY RANDOM() LIMIT 1", ("fact",))
             fact = self.cur.fetchone()[0]
 
         return (fact, "fact")
@@ -251,7 +258,7 @@ class SongRandomizer(Randomizer):
     in the table determined by song.
     """
 
-    def __init__(self, name = "song_randomizer", path = "./"):
+    def __init__(self, name="song_randomizer", path="./"):
         """Init a randomizer together with a name to help determine the next line to processed
         from the database.
         """
@@ -276,7 +283,8 @@ class SongRandomizer(Randomizer):
         """
         with self.song_con:
             # Read current song status from lyrics_status table.
-            self.song_cur.execute("SELECT song, current_row FROM song_status WHERE name = ?", (self.name,))
+            self.song_cur.execute(
+                "SELECT song, current_row FROM song_status WHERE name = ?", (self.name,))
             status = self.song_cur.fetchone()
 
         if not status:
@@ -294,15 +302,16 @@ class SongRandomizer(Randomizer):
         """Fetch the next lyric to be randomized. The current song and the next rowid to read is read from the song_status table.
         Raise an error if the current song has been fully processed (or not set).
         """
-        table, row = self.get_current_song_status() # get table name and row inedx of the table to read
+        table, row = self.get_current_song_status()  # get table name and row inedx of the table to read
         with self.song_con:
-            sql = "SELECT verse FROM \"{}\" WHERE rowid = ?".format(table) # table names can't be targeted for a parameter replacements :(
+            sql = "SELECT verse FROM \"{}\" WHERE rowid = ?".format(
+                table)  # table names can't be targeted for a parameter replacements :(
             self.song_cur.execute(sql, (row,))
             row_data = self.song_cur.fetchone()
 
             # is the song already fully processed?
             if not row_data:
-                self.set_song_status("", -1) # empty song_status data for clarity
+                self.set_song_status("", -1)  # empty song_status data for clarity
                 raise SongError("Previous song finished")  # raise an error to stop execution
 
             # still within the current song
@@ -312,12 +321,13 @@ class SongRandomizer(Randomizer):
                 self.set_song_status(table, row + 1)
                 return (table, row_data[0], row)  # return (title, lyric, row index) -tuple
 
-    def set_song_status(self, song, rowid = 1):
+    def set_song_status(self, song, rowid=1):
         """Update song_status table with the provided song and rowid.
         Note: caller should handle input validation.
         """
         with self.song_con:
-            self.song_cur.execute("UPDATE song_status SET song = ?, current_row = ? WHERE name = ?", (song, rowid, self.name))
+            self.song_cur.execute(
+                "UPDATE song_status SET song = ?, current_row = ? WHERE name = ?", (song, rowid, self.name))
 
     def add_song_status_entry(self):
         """Add an entry to the lyrics_status table for self.name."""
@@ -326,16 +336,15 @@ class SongRandomizer(Randomizer):
                 # name is UNIQUE, song is NOT NULL, insert dummy data for song and current_row to denote invalid entry
                 self.song_cur.execute("INSERT INTO song_status(name) VALUES (?)", (self.name,))
             except lite.IntegrityError as e:
-                print "Using existing song_status entry for {}".format(self.name)
+                print("Using existing song_status entry for {}".format(self.name))
 
     def get_songs(self):
         """Return a list of valid song names to process, ie, the names of the tables in songs.db."""
         with self.song_con:
             self.song_cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
             data = self.song_cur.fetchall()
-            return [table_name[0] for table_name in data if table_name[0] != "song_status"] # drop song_status table
-
-
+            # drop song_status table
+            return [table_name[0] for table_name in data if table_name[0] != "song_status"]
 
 
 class SongError(Exception):

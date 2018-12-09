@@ -9,34 +9,80 @@ import os
 import sys
 import nltk
 import sqlite3 as lite
+from collections import defaultdict
+from nltk.corpus import brown
 
 import quotes
 
 CLASSES = quotes.Randomizer.CLASSES
 
-def create_quote_database():
-    """Drop all current data from quotes.db and refill it from quotes.sql"""
-    try:  # the file may not exist
-        os.remove("quotes.db")
-    except OSError as e:
-        pass
 
-    con, cur = get_connection("quotes.db")
-    with con:
-        cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE NOT NULL, author TEXT NOT NULL, frequency INTEGER DEFAULT 0)")
-        cur.execute("CREATE TABLE dictionary (word TEXT, class TEXT, UNIQUE(word, class))")
+class Controller(object):
 
-    execute_sql("quotes.sql")
-    build_dictionary()
+    def __init__(self):
+        self.con = lite.connect("./quotes.db")
+        self.cur = self.con.cursor()
 
-def create_song_database():
-    """Drop all current data from songs.db and refill it from songs.sql."""
-    try:  # the file may not exist
-        os.remove("songs.db")
-    except OSError as e:
-        pass
+    def create_quote_database(self):
+        """Drop all current data from quotes.db and refill it from quotes.sql"""
+        try:  # the file may not exist
+            os.remove("./quotes.db")
+        except OSError:
+            pass
 
-    execute_sql("songs.sql")  # contains CREATE TABLE statements
+        with self.con:
+            self.cur.execute('''PRAGMA journal_mode = OFF''')
+            self.cur.execute(
+                "CREATE TABLE quotes(quote TEXT UNIQUE, author TEXT)")
+            self.cur.execute(
+                "CREATE TABLE pos_map(pos_id TEXT, match_word TEXT, UNIQUE(pos_id, match_word))")
+
+    def create_pos_map(self):
+        """Create a hash table of consecutive POS tags and matching words from
+        an nltk corpus.
+        """
+        index = defaultdict(set)
+        brown_tagged_sents = brown.tagged_sents(categories="news", tagset="universal")
+
+        # create 3-grams from each sentence
+        for sent in brown_tagged_sents:
+            ngrams = nltk.ngrams(sent, 3)
+
+            for ngram in ngrams:
+                # join the 3 POS tags from each ngram as key to the index
+                key = ";".join([token[1] for token in ngram])
+                word = ngram[1][0]  # middle word as the value
+
+                index[key].add(word)
+
+        return index
+
+    def parse_quotes(self):
+        """Fetch list of (quote, author) tuples from quotes.txt to be inserted into the database."""
+        with open("./quotes.txt") as f:
+            lines = f.readlines()
+
+        # strip comments, empty lines and authors
+        lines = [line.rstrip("\n").split(";")
+                 for line in lines if line != "\n" and not line.startswith("--")]
+
+        return lines
+
+    def insert_quotes(self):
+        """INSERT quotes from quotes.txt to the database."""
+        quote_tokens = self.parse_quotes()
+        with self.con:
+            # quote column is UNIQUE, skip duplicate lines.
+            try:
+                self.cur.executemany("INSERT INTO quotes VALUES (? ,?)", quote_tokens)
+            except (lite.Warning, lite.IntegrityError):
+                pass
+
+    def insert_pos_map(self):
+        """Fill pos_map table by creating the mapping and INSERTING in to the database."""
+        pos_map = self.create_pos_map()
+        pos_map = self.format_pos_map(pos_map)
+
 
 def execute_sql(sql_file):
     """Execute the contents of quotes.sql or songs.sql to update the corresponding database.
@@ -47,7 +93,7 @@ def execute_sql(sql_file):
     con, cur = get_connection(db_file)
 
     with con:
-        print "Executing {}, please wait...".format(sql_file)
+        print("Executing {}, please wait...".format(sql_file))
         with open(sql_file) as f:
             lines = [line.rstrip("\n;").lstrip("\t") for line in f]
             for sql in lines:
@@ -59,9 +105,10 @@ def execute_sql(sql_file):
                 except (lite.Warning, lite.IntegrityError) as e:
                     pass
                 except Exception as e:
-                    print e
-                    print "Something went wrong, try rebuilding the database"
-                    sys.exit() # stop execution as soon as an unknown error occurs
+                    print(e)
+                    print("Something went wrong, try rebuilding the database")
+                    sys.exit()  # stop execution as soon as an unknown error occurs
+
 
 def build_dictionary():
     """Builds the dictionary table by reading the tagged data from Brown corpus from the nltk module
@@ -70,14 +117,15 @@ def build_dictionary():
     """
     con, cur = get_connection("quotes.db")
 
-    print "Building a dictionary from an internal dataset. This may take a while..."
+    print("Building a dictionary from an internal dataset. This may take a while...")
     tagged = nltk.corpus.brown.tagged_words()
     # Strip multiples and words with invalid tags and characters.
     # It's sligthly faster to first remove multiples and then remove invalid.
     tagged = set(tagged)
-    tagged = [token for token in tagged if ( token[1] in CLASSES and token[0].replace("-", "").isalnum() and len(token[0]) > 3 )]
+    tagged = [token for token in tagged if (
+        token[1] in CLASSES and token[0].replace("-", "").isalnum() and len(token[0]) > 3)]
 
-    print "Inserting " + str(len(tagged)) + " items to the database."
+    print("Inserting " + str(len(tagged)) + " items to the database.")
     with con:
         for word, tag in tagged:
             if tag in CLASSES:
@@ -85,6 +133,7 @@ def build_dictionary():
                     cur.execute("INSERT INTO dictionary(word, class) VALUES(?, ?)", (word, tag))
                 except lite.IntegrityError as e:
                     pass
+
 
 def parse_table_for_dictionary():
     """Parse the quotes table for words to add to the dictionary table."""
@@ -109,6 +158,7 @@ def parse_table_for_dictionary():
         except lite.IntegrityError as e:
             pass
 
+
 def parse_string_for_dictionary(s):
     """Parse given string for database dictionary. Exclude words already in the dictionary.
     Args:
@@ -118,8 +168,8 @@ def parse_string_for_dictionary(s):
 
     tagged = pos_tag_string(s)
     if not tagged:
-        print "No valid tags in:"
-        print s
+        print("No valid tags in:")
+        print(s)
 
     # Store in database.
     with con:
@@ -130,9 +180,10 @@ def parse_string_for_dictionary(s):
                 except lite.IntegrityError as e:
                     pass
 
-#==================================================================
+# ==================================================================
 # Helper functions #
 #==================#
+
 
 def get_connection(db_file):
     """Helper function: create a connection to a database."""
@@ -141,6 +192,7 @@ def get_connection(db_file):
 
     return con, cur
 
+
 def pos_tag_string(s):
     """Use nltk to pos-tag a string. Strips invalid and short words.
     Valid tokens to insert to the database:
@@ -148,11 +200,14 @@ def pos_tag_string(s):
         2) len > 3
     """
     tokens = nltk.word_tokenize(s)
-    tokens = quotes.Randomizer.normalize_tokens(tokens) # stich apostrophes back: let's -> [let, 's].
+    # stich apostrophes back: let's -> [let, 's].
+    tokens = quotes.Randomizer.normalize_tokens(tokens)
     tagged = nltk.pos_tag([word.lower() for word in tokens])
-    tagged = [token for token in tagged if (token[0].replace("-", "").isalnum() and len(token[0]) > 3) ]
+    tagged = [token for token in tagged if (
+        token[0].replace("-", "").isalnum() and len(token[0]) > 3)]
 
     return tagged
+
 
 def database_size():
     """Print information on the size of the database.
@@ -164,16 +219,17 @@ def database_size():
     with con:
         cur.execute("SELECT COUNT(quote) FROM quotes")
         size = cur.fetchone()
-        print size[0], "quotes"
+        print(size[0], "quotes")
 
         cur.execute("SELECT COUNT(*) FROM dictionary")
         size = cur.fetchone()
-        print size[0], "words"
+        print(size[0], "words")
 
         for item in CLASSES:
             cur.execute("SELECT COUNT(word) FROM dictionary WHERE class = ?", (item,))
             size = cur.fetchone()
-            print item, size[0]
+            print(item, size[0])
+
 
 def find_invalid():
     """Find various erroneous entries from of quotes.sql (not the database!):
@@ -194,9 +250,11 @@ def find_invalid():
                 continue
 
             # Strip the sql from the beginning and the end.
-            line = line.lstrip("INSERT INTO quotes(quote, author) VALUES") # Note that this still leaves a "'" (but not a space or "(" !) to the beginning...
-            line = line.lstrip("'")  # remove the single quote separately, this way no actual quote characters are removed
-            line = line.rstrip("');\n" )  # remove sql characters and any whitespace from the end
+            # Note that this still leaves a "'" (but not a space or "(" !) to the beginning...
+            line = line.lstrip("INSERT INTO quotes(quote, author) VALUES")
+            # remove the single quote separately, this way no actual quote characters are removed
+            line = line.lstrip("'")
+            line = line.rstrip("');\n")  # remove sql characters and any whitespace from the end
             # Split by "'," combination to get the individual items from the (quote, author)-pair
             quote, author = line.split("',")
 
