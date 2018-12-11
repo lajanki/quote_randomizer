@@ -15,12 +15,10 @@ database line by line, randomizes them and outputs the result.
 
 import nltk
 import random
-import json
 import os.path
-import sqlite3 as lite
+import collections
 
-from collections import defaultdict
-from nltk.corpus import brown
+import dbcontroller
 
 
 class Randomizer(object):
@@ -46,21 +44,65 @@ class Randomizer(object):
     def __init__(self, path="./"):
         """Define database connections and a base path for data files."""
         self.path = path
-        # create connection to quotes.db, this is common to by both QuoteRandomizer and SongRandomizer
-        self.con, self.cur = self.get_database_connection(path + "quotes.db")
+        self.dbcontroller = dbcontroller.Controller()
 
-    def get_database_connection(self, db_file):
-        """Try to create a connection to a database. Raises an error if it doesn't exist."""
+    def generate(self):
+        quote = self.get_quote()
+        author = quote[1]
+        tokens = self.tokenize_quote(quote[0])
 
-        # lite.connect will create an empty database if one doesn't exist, raise an error instead
-        if not os.path.isfile(db_file):
-            raise IOError("Error Database {} doesn't exist.".format(db_file))
+        # choose a random 3-gram and switch the middle word using
+        # the pos tags as key
+        switch_tokens = random.choice(tokens)
+        switch_tags = [token[1] for token in switch_tokens]
 
-        con = lite.connect(db_file)
-        cur = con.cursor()
+        replace_word = self.dbcontroller.get_random_word(switch_tags)
 
-        return con, cur
+        # stitch the tokens back to a quote
+        idx = tokens.index(switch_tokens)
+        # switch_tokens is a tuole, convert to a mutable type since we want to
+        # modify the middle element
+        switch_tokens = list(switch_tokens)
+        switch_tokens[1] = (replace_word, "")
+        tokens[idx] = switch_tokens
 
+        # Stich ngram tokens back to a string.
+        # tokens is a list of 3-gram tuples
+        # ie "Live free or don't!" becomes:
+        #  [((Live, tag), (free, tag), (or, tag)),
+        #  ((free, tag), (or, tag), (don't, tag))
+        #  ((or, tag), (don't, tag), (!, tag))]
+        # Since we replaced the middle word of a random 3-gram, we need to
+        # pick the middle word from each 3-gram. To finish the string also pick
+        # the first word from the first 3-gram and the last word from the last
+        # 3-gram.
+        # Using string.replace without the pos tags is simpler, but we cannot
+        # exclude the possibility that the switch word (or even the switch 3-gram)
+        # occurs more than once.
+        words = [tokens[0][0]] + [token[1] for token in tokens] + [tokens[-1][2]]
+        new_quote = " ".join([w[0] for w in words])
+        new_quote = Randomizer.cleanup(new_quote)
+
+        quote_response = collections.namedtuple(
+            "QuoteResponse", ["old_quote", "author", "new_quote", "new_word"])
+        randomized_quote = quote_response(
+            old_quote=quote[0], author=author, new_quote=new_quote, new_word=replace_word)
+
+        return randomized_quote
+
+    def get_quote(self):
+        return self.dbcontroller.get_quote()
+
+    def tokenize_quote(self, quote):
+        """Return a list of POS-tokenized and ngrammed quote."""
+        tokens = nltk.word_tokenize(quote)
+        tags = nltk.pos_tag(tokens, tagset="universal")
+
+        ngrams = nltk.ngrams(tags, 3)
+        # ngrams is a generator, return a list (quotes are short anyway)
+        return list(ngrams)
+
+    # TODO
     def get_change_degree(self, tokens):
         """Given a tokenized string, determine the number of words to change."""
         if len(tokens) < 4:
@@ -74,89 +116,6 @@ class Randomizer(object):
         else:
             change_degree = 3
         return change_degree
-
-    def choose_replacing_words(self, tokens_to_change):
-        """Given a list of tokenized words, choose words with matching pos tags from the database.
-        Arg:
-            tokens_to_change (list): a list of (idx, word, tag) tuples
-        """
-        new_words = []
-        with self.con:
-            for token in tokens_to_change:
-                self.cur.execute(
-                    "SELECT word  FROM dictionary WHERE class = ? AND word != ? ORDER BY RANDOM()", (token[2], token[1]))
-                try:
-                    db_word = self.cur.fetchone()[0]  # the dictionary mat not have a replacing word
-
-                    # capitalize the word if necessary:
-                    if token[1] == token[1].upper():  # the whole word should be capitalized
-                        db_word = db_word.upper()
-
-                    elif token[1] == token[1].capitalize():  # only the first letter is capitalized
-                        db_word = db_word.capitalize()
-
-                    new_word_token = (token[0], db_word)  # (idx, word) -tuple
-                    new_words.append(new_word_token)
-
-                except TypeError as err:
-                    new_words.append((token[0], "NA"))
-
-        return new_words
-
-    def switch_word_tokens(self, tokenized_string, new_tokens):
-        """Given tokenized string and a lists of word tokens, replace words whose index
-        match those in the latter list.
-        """
-        for token in new_tokens:
-            idx = token[0]
-            tokenized_string[idx] = token[1]
-
-        return tokenized_string
-
-    def randomize_string(self, string):
-        """Perform the actual randomizing of the given string.
-        Analyze the structure of the string and replace 1-3 words with ones fetched
-        from database.
-        Arg:
-            string (string): the string to randomize
-        Return:
-            the new string
-        """
-        # tokenize, reattach apostrophes and pos tag tokens
-        tokens = Randomizer.normalize_tokens(nltk.word_tokenize(string))
-        tagged = nltk.pos_tag(tokens)
-
-        invalid_tokens = [
-            "'",
-            "http",
-            "@",
-            "//",
-            "#",
-            "%"
-        ]
-
-        # format a list of (idx, word, tag) tuples of valid tokens in tagged
-        valid = [(idx, item[0], item[1]) for idx, item in enumerate(tagged)
-                 if not any(token in item[0] for token in invalid_tokens) and item[1] in Randomizer.CLASSES]
-
-        if not valid:
-            raise ValueError("Error: no valid words to change.\n" + string)
-
-        # determine the words to change, fetch matching words from the database and make the switch
-        change_degree = self.get_change_degree(valid)
-        # list of (idx, word, tag) tuples of words from the original string
-        words_to_change = random.sample(valid, change_degree)
-        replacing_words = self.choose_replacing_words(
-            words_to_change)  # list of (idx, word) tuples of new words
-        tokens = self.switch_word_tokens(tokens, replacing_words)
-        s = " ".join(tokens)
-        s = Randomizer.cleanup(s)
-
-        return s
-
-    def generate(self):
-        """Create a randomized string from a database entry. This method should be implemented in a subclass."""
-        pass
 
     @staticmethod
     def normalize_tokens(tokens):
@@ -246,107 +205,3 @@ class QuoteRandomizer(Randomizer):
             fact = self.cur.fetchone()[0]
 
         return (fact, "fact")
-
-
-class SongRandomizer(Randomizer):
-    """Randomizer for song lyrics. Keeps track of which lyrics was previously fetched from the database
-    so whole songs are processed in order.
-    Status of the current song (for a given SongRandomizer) is stored in a separate lyrics_status tables
-    with the schema
-        CREATE TABLE song_status (name TEXT UNIQUE, song TEXT, current_row INTEGER);
-    where name is a name given to the SongRandomizer and current_row is a row index to the the next lyrics
-    in the table determined by song.
-    """
-
-    def __init__(self, name="song_randomizer", path="./"):
-        """Init a randomizer together with a name to help determine the next line to processed
-        from the database.
-        """
-        Randomizer.__init__(self, path)
-        self.name = name
-        # create new connection to the song database, don't overwrite existing connector to quotes.db!
-        self.song_con, self.song_cur = self.get_database_connection(path + "songs.db")
-        # add an entry into the song_status table for self.name,
-        # (ignored if one is already present)
-        self.add_song_status_entry()
-
-    def generate(self):
-        """Fetch a lyric and randomize it."""
-        song, lyric, _ = self.get_next_lyric()
-
-        randomized = self.randomize_string(lyric)
-        return (song, randomized)
-
-    def get_current_song_status(self):
-        """Get current song status data (table name and row index) from song_status table. Raises an Error if no song
-        has been set (ie. previous song has been fully processed and waiting for call to start the next song).
-        """
-        with self.song_con:
-            # Read current song status from lyrics_status table.
-            self.song_cur.execute(
-                "SELECT song, current_row FROM song_status WHERE name = ?", (self.name,))
-            status = self.song_cur.fetchone()
-
-        if not status:
-            raise SongError("No song set")
-
-        table = status[0]
-        row = status[1]
-
-        if not table:
-            raise SongError("No song set")
-
-        return table, row
-
-    def get_next_lyric(self):
-        """Fetch the next lyric to be randomized. The current song and the next rowid to read is read from the song_status table.
-        Raise an error if the current song has been fully processed (or not set).
-        """
-        table, row = self.get_current_song_status()  # get table name and row inedx of the table to read
-        with self.song_con:
-            sql = "SELECT verse FROM \"{}\" WHERE rowid = ?".format(
-                table)  # table names can't be targeted for a parameter replacements :(
-            self.song_cur.execute(sql, (row,))
-            row_data = self.song_cur.fetchone()
-
-            # is the song already fully processed?
-            if not row_data:
-                self.set_song_status("", -1)  # empty song_status data for clarity
-                raise SongError("Previous song finished")  # raise an error to stop execution
-
-            # still within the current song
-            else:
-                # update row index in song_status
-                #self.set_song_status(row + 1)
-                self.set_song_status(table, row + 1)
-                return (table, row_data[0], row)  # return (title, lyric, row index) -tuple
-
-    def set_song_status(self, song, rowid=1):
-        """Update song_status table with the provided song and rowid.
-        Note: caller should handle input validation.
-        """
-        with self.song_con:
-            self.song_cur.execute(
-                "UPDATE song_status SET song = ?, current_row = ? WHERE name = ?", (song, rowid, self.name))
-
-    def add_song_status_entry(self):
-        """Add an entry to the lyrics_status table for self.name."""
-        with self.song_con:
-            try:
-                # name is UNIQUE, song is NOT NULL, insert dummy data for song and current_row to denote invalid entry
-                self.song_cur.execute("INSERT INTO song_status(name) VALUES (?)", (self.name,))
-            except lite.IntegrityError as e:
-                print("Using existing song_status entry for {}".format(self.name))
-
-    def get_songs(self):
-        """Return a list of valid song names to process, ie, the names of the tables in songs.db."""
-        with self.song_con:
-            self.song_cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            data = self.song_cur.fetchall()
-            # drop song_status table
-            return [table_name[0] for table_name in data if table_name[0] != "song_status"]
-
-
-class SongError(Exception):
-    """Custom error for song processing related edge cases."""
-    pass
