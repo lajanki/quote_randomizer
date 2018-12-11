@@ -59,6 +59,10 @@ class Controller(object):
         the pos_map table matching the key. The row matching the key is also
         ;-delimited. The row is split and a random word is returned.
         """
+        # if key is a list, convert to ;-delimited string
+        if type(key) == list:
+            key = ";".join(key)
+
         with self.con:
             self.cur.execute(
                 "SELECT match_word FROM pos_map WHERE pos_id = ? ORDER BY RANDOM() LIMIT 1", (key,))
@@ -79,7 +83,7 @@ class Controller(object):
 
         # create 3-grams from each sentence
         for sent in brown_tagged_sents:
-            ngrams = nltk.ngrams(sent, 3)
+            ngrams = nltk.ngrams(sent, self.ngram_size)
 
             for ngram in ngrams:
                 # join the 3 POS tags from each ngram as key to the index
@@ -141,4 +145,6 @@ class Controller(object):
                 dupes.append(quote)
             seen.append(quote)
 
-        return {"dupes": dupes, "long": long_, "malformed": malformed}
+        invalid_quotes = collections.namedtuple(
+            "InvalidContainer", ["dupes", "long", "malformed"])
+        return invalid_quotes(dupes=dupes, long=long_, malformed=malformed)
