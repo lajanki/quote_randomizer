@@ -56,7 +56,7 @@ class Controller(object):
                 pass
 
     def insert_pos_map(self):
-        """Fill pos_map table by creating the mapping and INSERTING in to the database."""
+        """Fill pos_map table by creating the mapping and INSERTing in to the database."""
         pos_map = self.create_pos_map()
         with self.con:
             for key in pos_map:
@@ -67,7 +67,7 @@ class Controller(object):
     def get_quote(self):
         """SELECT and return a random (quote, author) tuple from the database."""
         with self.con:
-            self.cur.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
+            self.cur.execute("SELECT * FROM quotes ORDER BY RANDOM()")
             row = self.cur.fetchone()
 
         return row
@@ -76,15 +76,14 @@ class Controller(object):
         """SELECT and return a random fact from the database."""
         with self.con:
             self.cur.execute(
-                "SELECT * FROM quotes WHERE author='fact' ORDER BY RANDOM() LIMIT 1")
+                "SELECT * FROM quotes WHERE author='fact' ORDER BY RANDOM()")
             row = self.cur.fetchone()
 
         return row
 
-    def get_random_word(self, key):
-        """Given a ;-delimited POS tag key, SELECT and return a random word from
-        the pos_map table matching the key. The row matching the key is also
-        ;-delimited. The row is split and a random word is returned.
+    def get_matching_word_list(self, key):
+        """Given a ;-delimited POS tag key, return all matching words from the pos_map
+        table as a list. 
         """
         # if key is a list, convert to ;-delimited string
         if isinstance(key, list):
@@ -92,17 +91,36 @@ class Controller(object):
 
         with self.con:
             self.cur.execute(
-                "SELECT match_word FROM pos_map WHERE pos_id = ? ORDER BY RANDOM() LIMIT 1", (key,))
+                "SELECT match_word FROM pos_map WHERE pos_id = ?", (key,))
             row = self.cur.fetchone()
 
         if not row:
             raise KeyError("Invalid key: {}".format(key))
 
+        return row[0].split(";")
+
+    def get_matching_word(self, key):
+        """Given a ;-delimited POS tag key, return a random matching word from the pos_map
+        table as a list. 
+        """
+        # if key is a list, convert to ;-delimited string
+        if isinstance(key, list):
+            key = ";".join(key)
+
+        with self.con:
+            self.cur.execute(
+                "SELECT match_word FROM pos_map WHERE pos_id = ?", (key,))
+            row = self.cur.fetchone()
+
+        if not row:
+            raise KeyError("Invalid key: {}".format(key))
+
+        # row is a singleton tuple of ;-delimited string of all words matching the key, select one randomly
         rand_word = random.choice(row[0].split(";"))
         return rand_word
 
     def create_pos_map(self):
-        """Create a mapping table of 3 consecutive POS tags and matching middle words from nltk
+        """Create a defaultdict of 3 consecutive POS tags and matching middle words from an nltk
         internal dataset. The key is a ;-delimited string of the POS tags.
         Eg. finds all verbs with NUM, VERB, PRON sequence in the dataset.
         """

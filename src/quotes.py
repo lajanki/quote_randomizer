@@ -55,7 +55,7 @@ class Randomizer(object):
         switch_tokens = random.choice(tokens)
         switch_tags = [token[1] for token in switch_tokens]
 
-        replace_word = self.dbcontroller.get_random_word(switch_tags)
+        replace_word = self.dbcontroller.get_matching_word(switch_tags)
 
         # find the index of the randomly selected switch token from the original tokenized quote
         idx = tokens.index(switch_tokens)  
