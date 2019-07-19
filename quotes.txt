@@ -1350,7 +1350,7 @@ The microwave was invented after a researcher walked by a radar tube and a choco
 It's impossible to lick your elbow.;fact
 Human thigh bones are stronger than concrete.;fact
 Eating lemons makes you live longer.;fact
-Soldiers from every country salute with their right hand. ;fact
+Soldiers from every country salute with their right hand.;fact
 Scientists can make teeth out of pee.;fact
 
 The distance from the Earth to the Moon is approximately 109 Moons.;fact
@@ -1377,6 +1377,28 @@ The were still mammoths roaming the earth by the time the pyramids were being co
 
 Seahorses are raised by their fathers.;fact
 Mitochondria is the powerhouse of the cell.;fact
+Without pinkie finger our hand will lose 50% of its strenght.;fact
+The longest sausage in the world was made in Romania and was 39 miles long.;fact
+Of the 193 UN member nations, Britain has invaded 171 of them at some point.;fact
+The creator of a Game Boy was a Janitor.;fact
+There are only two sets of escalators in the entire state of Wyoming.;fact
+The state of wyoming has more firework stands than;fact
+Ketchup was originally supposed to be a medicine.;fact
+You cant overdose on LSD.;fact
+
+Almost all monkeys have tails; apes do not.;fact
+We have 30 years until all coral reefs are dead.;fact
+We're the only species on the planet that drinks the milk of another species.;fact
+Corn is a type of grass.;fact
+Blushing is a contraction of blood rushing.;fact
+In France, it's legal to marry a dead person.;fact
+Snakes can't lift the end of their tails.;fact
+The taste in your mouth you have when you’re sick is just that of diluted blood.;fact
+There Are Polar Bears That Are Black.;fact
+Some cockroaches can fly.;fact
+
+
+
 
 
 --lyrics

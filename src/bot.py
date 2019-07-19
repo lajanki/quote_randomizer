@@ -8,12 +8,15 @@ Note: unlike main.py, this scripts provides little error checking. Database file
 and generating lyrics will ungracefully exit if there is no next line to read.
 """
 
-import twython
+
 import json
 import argparse
 import logging
 
-import quotes
+import twython
+from src import quotes
+
+
 
 logging.basicConfig(filename = "./quotes.log", format="%(asctime)s %(message)s", level=logging.INFO)
 randomizer = quotes.QuoteRandomizer

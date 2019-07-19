@@ -8,22 +8,40 @@ A library module for creating and adding new items to the base databases for the
 import sqlite3 as lite
 import collections
 import random
+import os
 
 import nltk
 from nltk.corpus import brown
 
 
+
+PATH_TO_SRC = os.path.abspath(os.path.dirname(__file__))
+PATH_TO_DB = os.path.join(PATH_TO_SRC, "..", "quotes.db")
+PATH_TO_QUOTES_TXT = os.path.join(PATH_TO_SRC, "..", "quotes.txt")
+
+# determine the tagset to use for determining POS tags,
+# see https://github.com/slavpetrov/universal-pos-tags
+NLTK_TAGSET = "universal"
+
+
+
 class Controller(object):
 
     def __init__(self):
-        self.con = lite.connect("./quotes.db")
+        self.con = lite.connect(PATH_TO_DB)
         self.cur = self.con.cursor()
 
     def create_quote_database(self):
-        """Drop all current data from quotes.db and refill it from quotes.sql. Raises
-        IntegrityError if either table already exists.
+        """Creates the two tables _quotes_ and _pos_map_ for quotes and a mapping of POS
+        classes and words. Drops all previous data!
         """
         with self.con:
+            try:
+                self.cur.execute("DROP TABLE quotes")
+                self.cur.execute("DROP TABLE pos_map")
+            except lite.OperationalError: # raised if tables don't exist
+                pass
+
             self.cur.execute("CREATE TABLE quotes (quote TEXT UNIQUE, author TEXT)")
             self.cur.execute("CREATE TABLE pos_map (pos_id TEXT PRIMARY KEY, match_word TEXT)")
 
@@ -54,13 +72,22 @@ class Controller(object):
 
         return row
 
+    def get_fact(self):
+        """SELECT and return a random fact from the database."""
+        with self.con:
+            self.cur.execute(
+                "SELECT * FROM quotes WHERE author='fact' ORDER BY RANDOM() LIMIT 1")
+            row = self.cur.fetchone()
+
+        return row
+
     def get_random_word(self, key):
         """Given a ;-delimited POS tag key, SELECT and return a random word from
         the pos_map table matching the key. The row matching the key is also
         ;-delimited. The row is split and a random word is returned.
         """
         # if key is a list, convert to ;-delimited string
-        if type(key) == list:
+        if isinstance(key, list):
             key = ";".join(key)
 
         with self.con:
@@ -75,15 +102,16 @@ class Controller(object):
         return rand_word
 
     def create_pos_map(self):
-        """Create a hash table of consecutive POS tags and matching words from
-        an nltk corpus.
+        """Create a mapping table of 3 consecutive POS tags and matching middle words from nltk
+        internal dataset. The key is a ;-delimited string of the POS tags.
+        Eg. finds all verbs with NUM, VERB, PRON sequence in the dataset.
         """
         index = collections.defaultdict(set)
-        brown_tagged_sents = brown.tagged_sents(categories="news", tagset="universal")
+        brown_tagged_sents = brown.tagged_sents(categories="news", tagset=NLTK_TAGSET)
 
         # create 3-grams from each sentence
         for sent in brown_tagged_sents:
-            ngrams = nltk.ngrams(sent, self.ngram_size)
+            ngrams = nltk.ngrams(sent, 3)
 
             for ngram in ngrams:
                 # join the 3 POS tags from each ngram as key to the index
@@ -96,7 +124,7 @@ class Controller(object):
 
     def parse_quotes(self):
         """Fetch list of(quote, author) tuples from quotes.txt to be inserted into the database."""
-        with open("./quotes.txt") as f:
+        with open(PATH_TO_QUOTES_TXT) as f:
             lines = f.readlines()
 
         # strip comments, empty lines and authors
@@ -105,14 +133,16 @@ class Controller(object):
 
         return lines
 
-    def get_size(self):
-        """Print information on the size of the database.
-        Used with --size switch.
-        """
-        with self.con:
-            self.cur.execute("SELECT COUNT(quote) FROM quotes")
-            size = self.cur.fetchone()
-            print("quotes:", size[0])
+    def validate_quotes(self):
+        """Check quotes.txt for duplicates or otherwise malformed data."""
+        invalid = self.find_invalid()
+        critical = invalid.dupes + invalid.malformed
+        if critical:
+            print("""ERROR: found the following invalid entries in quotes.txt.
+            Check for extra whitespace and duplicates and try again.""")
+            for item in critical:
+                print(item)
+            raise ValueError("Invalid data in quotes.txt")
 
     def find_invalid(self):
         """Find various types of invalid entries in quotes.txt(and not from the database itself).
@@ -145,6 +175,15 @@ class Controller(object):
                 dupes.append(quote)
             seen.append(quote)
 
-        invalid_quotes = collections.namedtuple(
-            "InvalidContainer", ["dupes", "long", "malformed"])
-        return invalid_quotes(dupes=dupes, long=long_, malformed=malformed)
+        InvalidQuoteContainer = collections.namedtuple(
+            "InvalidQuoteContainer", ["dupes", "long", "malformed"])
+        return InvalidQuoteContainer(dupes=dupes, long=long_, malformed=malformed)
+
+    def get_size(self):
+        """Print information on the size of the database.
+        Used with --size switch.
+        """
+        with self.con:
+            self.cur.execute("SELECT COUNT(quote) FROM quotes")
+            size = self.cur.fetchone()
+            print("quotes:", size[0])
