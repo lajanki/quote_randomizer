@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""A runnable interface to quotes.py. Prints generated quotes/songs on screen."""
+"""
+Project entrypoint. Prints generated quotes/songs on screen.
+"""
 
 import argparse
 import sys
@@ -49,9 +51,7 @@ def randomize_quote():
     """Create a new randomized quote or a fact."""
     try:
         randomizer = quotes.Randomizer()
-        old_quote = randomizer.get_quote()
-
-        res = randomizer.generate(old_quote)
+        res = randomizer.generate()
         quote = res.new_quote
         author = res.author
 
@@ -66,9 +66,7 @@ def randomize_fact():
     """Create a new randomized fact."""
     try:
         randomizer = quotes.Randomizer()
-        old_fact = randomizer.get_fact()
-
-        res = randomizer.generate(old_fact)
+        res = randomizer.generate("fact")
         fact = res.new_quote
 
         print(fact)

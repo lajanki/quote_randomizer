@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-A library module for creating and adding new items to the base databases for the randomizers.
+A library module for interacting with the quote database.
 """
 
 import sqlite3 as lite
@@ -11,24 +11,13 @@ import random
 import os
 
 import nltk
-from nltk.corpus import brown
-
-
-
-PATH_TO_SRC = os.path.abspath(os.path.dirname(__file__))
-PATH_TO_DB = os.path.join(PATH_TO_SRC, "..", "quotes.db")
-PATH_TO_QUOTES_TXT = os.path.join(PATH_TO_SRC, "..", "quotes.txt")
-
-# determine the tagset to use for determining POS tags,
-# see https://github.com/slavpetrov/universal-pos-tags
-NLTK_TAGSET = "universal"
-
+from src import utils
 
 
 class Controller(object):
 
     def __init__(self):
-        self.con = lite.connect(PATH_TO_DB)
+        self.con = lite.connect(utils.PATH_TO_DB)
         self.cur = self.con.cursor()
 
     def create_quote_database(self):
@@ -57,7 +46,7 @@ class Controller(object):
 
     def insert_pos_map(self):
         """Fill pos_map table by creating the mapping and INSERTing in to the database."""
-        pos_map = self.create_pos_map()
+        pos_map = utils.create_pos_map()
         with self.con:
             for key in pos_map:
                 match_words = ";".join(pos_map[key])
@@ -119,30 +108,9 @@ class Controller(object):
         rand_word = random.choice(row[0].split(";"))
         return rand_word
 
-    def create_pos_map(self):
-        """Create a defaultdict of 3 consecutive POS tags and matching middle words from an nltk
-        internal dataset. The key is a ;-delimited string of the POS tags.
-        Eg. finds all verbs with NUM, VERB, PRON sequence in the dataset.
-        """
-        index = collections.defaultdict(set)
-        brown_tagged_sents = brown.tagged_sents(categories="news", tagset=NLTK_TAGSET)
-
-        # create 3-grams from each sentence
-        for sent in brown_tagged_sents:
-            ngrams = nltk.ngrams(sent, 3)
-
-            for ngram in ngrams:
-                # join the 3 POS tags from each ngram as key to the index
-                key = ";".join([token[1] for token in ngram])
-                word = ngram[1][0]  # middle word as the value
-
-                index[key].add(word)
-
-        return index
-
     def parse_quotes(self):
         """Fetch list of(quote, author) tuples from quotes.txt to be inserted into the database."""
-        with open(PATH_TO_QUOTES_TXT) as f:
+        with open(utils.PATH_TO_QUOTES_TXT) as f:
             lines = f.readlines()
 
         # strip comments, empty lines and authors
@@ -160,7 +128,8 @@ class Controller(object):
             Check for extra whitespace and duplicates and try again.""")
             for item in critical:
                 print(item)
-            raise ValueError("Invalid data in quotes.txt")
+
+            raise ValueError("Invalid data in quotes.txt:\n")
 
     def find_invalid(self):
         """Find various types of invalid entries in quotes.txt(and not from the database itself).

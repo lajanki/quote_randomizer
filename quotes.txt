@@ -1386,7 +1386,7 @@ The state of wyoming has more firework stands than;fact
 Ketchup was originally supposed to be a medicine.;fact
 You cant overdose on LSD.;fact
 
-Almost all monkeys have tails; apes do not.;fact
+Almost all monkeys have tails, apes do not.;fact
 We have 30 years until all coral reefs are dead.;fact
 We're the only species on the planet that drinks the milk of another species.;fact
 Corn is a type of grass.;fact

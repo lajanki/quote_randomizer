@@ -2,25 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-quote.py - A Random Quote Generator
-Picks an actual quote or a fact from a database, chooses 1-3 words
-and randomly switches them to new ones. Uses a natural language toolkit
-module (nltk) to tag words into classes in order to choose a right type
-of words to be replaced.
-
-Can also be used to work with song lyrics: the script reads lyrics from another
-database line by line, randomizes them and outputs the result.
-
-
-TODO:
-    * apostrophe tokenization: you're => [you, 're].
-        don't split by apostrophe? Should we ignore pos tags completely?
-    * change_degree + multiple switches
-    * split by sentences on tokenization?
-        sent_tokenize?
-        don't replace punctuation
-    * don't replace words with the same word
-
+Picks a real quote or a fact from a database, chooses 1-3 words
+and randomly switches them to new ones with matching part-os-speech tags. Natural language toolkit
+library (nltk) is used to tag words into POS classes in order to choose similar words as replacements.
 """
 
 import nltk
@@ -29,7 +13,7 @@ import os.path
 import collections
 
 from src import dbcontroller
-
+from src import utils
 
 
 class Randomizer(object):
@@ -41,21 +25,42 @@ class Randomizer(object):
         """Setup a database connector."""
         self.dbcontroller = dbcontroller.Controller()
 
-    def generate(self, old_quote):
+    def generate(self, type_="all"):
         """Generate a new quote. Chooses a random actual quote from the database and a random word to replace.
         Return
             a namedtuple of old and new quote as as well as the replacing word.
         """
         #TODO: support for more than 1 replacing word
-        author = old_quote[1]
-        tokens = self.tokenize_quote(old_quote[0])
+        if type_ == "fact":
+            old_quote = self.get_fact()
+        else:
+            old_quote = self.get_quote()
 
-        # choose a random 3-gram and switch the middle word using
-        # the pos tags as key
-        switch_tokens = random.choice(tokens)
+        author = old_quote[1]
+        tokens = utils.tokenize_normalize_and_tag(old_quote[0])
+
+        # Choose a 3-gram to use for the switch. The middle word will be switched.
+        # We need a random 3-gram where the middle word is not punctuation or contain other invalid characters.
+        valid_tokens = [token for token in tokens if token[1][1] not in (".", "CUSTOM1")]
+        switch_tokens = random.choice(valid_tokens)
+        old_word = switch_tokens[1][0]
         switch_tags = [token[1] for token in switch_tokens]
 
-        replace_word = self.dbcontroller.get_matching_word(switch_tags)
+        # randomly choose a new word from the list of matching POS tags 
+        replace_word_list = self.dbcontroller.get_matching_word_list(switch_tags)
+        # Ensure we're not choosing the original word. This will cause an IndexError if either
+        # the original word is not in the list (pos_map is built from different data) or
+        # it was only one item to choose from.
+        try:
+            replace_word_list.remove(old_word)
+        except ValueError: 
+            pass
+
+        try:
+            replace_word = random.choice(replace_word_list)
+        except IndexError:
+            raise IndexError("ERROR: couldn't find a replacing word")
+
 
         # find the index of the randomly selected switch token from the original tokenized quote
         idx = tokens.index(switch_tokens)  
@@ -73,12 +78,11 @@ class Randomizer(object):
         # In order to rebuild the string we need he middle words from each 3-gram as well as
         # the first word from the first 3-gram and the last word from the last 3-gram
 
-        # Note: using string.replace without the pos tags is simpler, but we cannot
-        # exclude the possibility that the switch word (or even the switch 3-gram)
-        # occurs more than once.
+        # Note: this is essentially replicating string.replace, but we want to ensure
+        # replacement of the same occurance of the word as was chosen earlier.  
         words = [tokens[0][0]] + [token[1] for token in tokens] + [tokens[-1][2]]
         new_quote = " ".join([w[0] for w in words])
-        new_quote = Randomizer.cleanup(new_quote)
+        new_quote = utils.cleanup_string(new_quote)
 
         quote_response = collections.namedtuple(
             "QuoteResponse", ["old_quote", "author", "new_quote", "new_word"])
@@ -93,12 +97,22 @@ class Randomizer(object):
     def get_fact(self):
         return self.dbcontroller.get_fact()
 
-    def tokenize_quote(self, quote):
+    def tokenize_and_tag(self, quote):
         """Tokenize and POS-tag a quote to a a list of 3-grams."""
         tokens = nltk.word_tokenize(quote)
-        tags = nltk.pos_tag(tokens, tagset=dbcontroller.NLTK_TAGSET)
+        tags = nltk.pos_tag(tokens, tagset=utils.NLTK_TAGSET)
 
         ngrams = nltk.ngrams(tags, 3)
+        # ngrams is a generator, return a list (quotes are short anyway)
+        return list(ngrams)
+
+    def tokenize_normalize_and_tag(self, quote):
+        """Tokenize and POS-tag a quote to a a list of 3-grams."""
+        tokens = nltk.word_tokenize(quote)
+        normalized_tokens = utils.normalize_tokens(tokens)
+        normalized_tags = utils.pos_tag_and_normalize(normalized_tokens)
+
+        ngrams = nltk.ngrams(normalized_tags, 3)
         # ngrams is a generator, return a list (quotes are short anyway)
         return list(ngrams)
 
@@ -116,53 +130,7 @@ class Randomizer(object):
             change_degree = 3
         return change_degree
 
-    @staticmethod
-    def normalize_tokens(tokens):
-        """nltk.word_tokenize() will tokenize words using ' as an apostrophe into
-        two tokens: eg. "can't" -> ["can", "'t"].
-        This function normalizes tokens by reattaching the parts back together. This will prevent
-        switch() from choosing the prefixes to be switched (words with apostrophes would be rejected anyway).
-        Arg:
-            tokens (list):  a tokenized list of a quote
-        Return:
-            a list of the normalized tokens"""
-        for idx, token in enumerate(tokens):
-            try:
-                if "'" in token:
-                    tokens[idx-1] += tokens[idx]
-                    tokens[idx] = "DEL"
-            except IndexError as e:
-                print(e)
-
-        normalized = [token for token in tokens if token != "DEL"]
-        return normalized
-
-    @staticmethod
-    def cleanup(s):
-        """Cleanup a string by removing extra whitespace around certain punctuation character.
-        This whitespace is introduced when tokenizing a string.
-        """
-        punctuation = {
-            " .": ".",
-            " ,": ",",
-            " !": "!",
-            " ?": "?",
-            " :": ":",
-            " ;": ";",
-            " %": "%",
-            "$ ": "$",
-            "@ ": "@",
-            "# ": "#",
-            "`` ": "\"",
-            "''": "\"",
-            "https: ": "https:",
-            "http: ": "http:"
-        }
-        for old, new in punctuation.items():
-            s = s.replace(old, new)
-
-        return s
-
+ 
 
 
 
