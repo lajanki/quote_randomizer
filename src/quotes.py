@@ -61,7 +61,7 @@ class Randomizer(object):
         new_quote = utils.cleanup_string(new_quote)
 
         quote_response = collections.namedtuple(
-            "QuoteResponse", ["old_quote", "author", "new_quote", "new_word"])
+            "QuoteResponse", ["old_quote", "author", "new_quote"])
         randomized_quote = quote_response(
             old_quote=old_quote[0], author=author, new_quote=new_quote)
 
