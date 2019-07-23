@@ -1,74 +1,67 @@
 # quote_randomizer
-Randomizes an actual quote by switching 1-3 words to ones with matching type. The script chooses 1-3 words, selects replacing words from a database and stiches the quote back together. Uses a natural language toolkit module to tag words into classes in order to choose a right type of words to be replaced.
+Randomizes an actual quote by switching 1-3 words with ones of matching type.
+> You must trust and believe in hardware or life becomes impossible.  
+> --Anton Chekhov  
+> original: You must trust and believe in people or life becomes impossible.
 
-Can also be used to work with song lyrics: the script reads lyrics from a song database line
-by line, randomizes them and outputs the result. 
 
 
-## Requirements
+ This script uses the Natural Language Toolkit (nltk) module to split an orginal quote to part-of-speech tags (POS tags), such as nouns and verbs. Thus, randomization is done by replacing randomly chosen words with new words of same POS tags. New words are chosen from an internal nltk dataset. Quotes are picked from a local database collected from several sources, see below.
 
-Python modules:
- * Natural Language Toolkit (nltk)
-     http://www.nltk.org/index.html
- * Twython:
-     https://twython.readthedocs.org/en/latest/
+Since a word's POS tag is dependant on the context of the sentence around it, this script analyzes the quote in 3-grams, ie. replacing is done so that the new words orignally appeared in a context where the two adjacent words had the same POS tags as in the quote to randomize.  
 
-Keys:
- * Using the bot feature requires Twitter access tokens and developer keys, see https://dev.twitter.com/oauth/overview/application-owner-access-tokens. These keys should be stored in keys.json file.
+Also includes a small Twython based Twitter bot for tweeting the results.
+
+https://www.nltk.org/
+
 
 
 ## Usage
-
-The main module ```main.py``` supports the following switches:
+Install virtualenv and dependencies with
 ```
+python3 -m virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+To use the nltk module, some additional data is needed:
+```
+python -m nltk.downloader book
+```
+This includes a corpora and tokenizer, see https://www.nltk.org/data.html. Note: this will download some 400MB of data to `~/nltk_data`
+
+To generate a randomized quote, run 
+```
+python main.py --quote
+```
+
+The full interface is as follows:
+```
+optional arguments:
+  -h, --help            show this help message and exit
   --quote               Generate a randomized quote.
   --fact                Generate a randomized fact.
-  --song                Generate the next song lyric for the current song. Use
-                        --set-song to initialize a new song.
-  --set-song song       Sets the given song to be the next one read by --song.
-                        Use 'list' to see valid choices.
-  --build-quote-database [mode]
-                        Fills the database by executing quotes.sql. If mode is
-                        set to 'full', the quotes table are parsed for new
-                        words to add to the dictionary. By default, the
-                        dictionary is not modified.
-  --build-song-database
+  --build-quote-database
+                        Fills the database from quotes.txt.
   --size                Shows the size of the databse.
+  --verbose             Print additional randomization information
   --tags                Shows info on all tags used to categorize words into
                         classes.
 ```
 
-```bot.py``` is a Twitterbot for tweeting the generated quotes. Using it requires valid Twitter access tokens and keys stored in ```keys.json```. 
+### Twitter bot
+In order to use the Twitter bot, Twitter's API keys and access tokens are needed. Once (acquired)[https://developer.twitter.com/en/docs/basics/authentication/guides/access-tokens.html] they should be places in `keys.json`.
+
+The bot can then be used with
 ```
-  --tweet mode     Generates a [quote] or a [song] lyric and posts it to
-                   Twitter. Requires access tokens and API keys from Twitter.
-  --set-song song  Sets the given song to be the next one read by --tweet
-                   song. Use [list] to see valid choices.
+python run_bot.py --tweet
 ```
-The ```--set-song``` switches are separate for both modules. In order to process a song the script needs to read it from the database line by line on each subsequent use of either ```quotes.py --song``` or ```bot.py --tweet song```. The status data is stored separately and using the main module will not affect which line the bot reads next.
-
-## File structure
-* main.py
-  - The main script
-* quotes.py
-  - library module for creating quotes and song lyrics
-* bot.py
-  - Twitterbot
-* dbcontroller.py
-  - module for database creation related functions
-* keys.json
-  - A keyfile for Twitter access tokens. Store your own keys here. Only required when running bot.py
-* quotes.sql
-  - SQL statements for the quotes database. Updating the database is done by manually updating this file and running the main script with the ```--build-quote-database``` switch
-* songs.sql
-  - SQL statements for the song database, similar to above
-* quotes.db
-  - the quote database. Contains tables for actual quotes as well a dictionary table where replacing words are chosen
-* songs.db
-  - song database
+This generates a randomized quote and tweets it.
 
 
+### Unit tests
+Unit tets can be run with
+```
+python -m unittest test/test_*.py
+```
 
-___
-Written on Python 2.7.8
 

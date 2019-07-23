@@ -28,6 +28,7 @@ def main(args):
         print("quotes.db contains:")
         db.get_size()
 
+    #TODO: display correct tagset
     elif args.tags:
         nltk.help.upenn_tagset()
 
@@ -56,7 +57,7 @@ def randomize_quote():
         author = res.author
 
         print(quote + "\n--" + author)
-        if args.debug:
+        if args.verbose:
             print("original:", res.old_quote)
 
     except IOError as err:
@@ -70,7 +71,7 @@ def randomize_fact():
         fact = res.new_quote
 
         print(fact)
-        if args.debug:
+        if args.verbose:
             print("original:", res.old_quote)
 
     except IOError as err:
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
     parser.add_argument("--build-quote-database", action="store_true", help="""Fills the database from quotes.txt.""")
     parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
-    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--verbose", help="Print additional randomization information", action="store_true")
     parser.add_argument(
         "--tags", help="Shows info on all tags used to categorize words into classes.", action="store_true")
     args = parser.parse_args()

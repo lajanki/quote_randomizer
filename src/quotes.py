@@ -43,9 +43,9 @@ class Randomizer(object):
         valid_tokens = [token for token in tokens if token[1][1] not in (".", "CUSTOM1")]
 
         change_degree = self.get_change_degree(valid_tokens)
-        switch_tokens = random.sample(valid_tokens, change_degree)
+        tokens_to_switch = random.sample(valid_tokens, change_degree)
         # Perform the switch
-        new_tokens = self.switch_tokens(tokens, switch_tokens)
+        new_tokens = self.switch_tokens(tokens, tokens_to_switch)
 
         # Stich tokenized quote back to a string.
         # Tokens is a list of 3-gram tuples, eg. "Live free or don't!" becomes:
@@ -67,17 +67,17 @@ class Randomizer(object):
 
         return randomized_quote
 
-    def switch_tokens(self, original_tokens, switch_tokens):
+    def switch_tokens(self, original_tokens, tokens_to_switch):
         """Given a tokenized quote and a list of tokens to switch, find a matching word for each
         switch token from the database and perform the switch. Returns a tokenized quote.
         Args:
             orignal_tokens (list): list of 3-grams of POS-tagged quote
-            switch_tokens (list): list of tokens to replace, a subset of original tokens
+            tokens_to_switch (list): list of tokens to replace, a subset of original tokens
         Return:
-            A tokenized quote similar to orignal_tokens with switch_tokens replaces with
+            A tokenized quote similar to orignal_tokens with tokens_to_switch replaced with
             new, POS-matching tokens. 
         """
-        for switch_token in switch_tokens:
+        for switch_token in tokens_to_switch:
             old_word = switch_token[1][0]
             switch_tags = [token[1] for token in switch_token]
 
@@ -98,7 +98,7 @@ class Randomizer(object):
 
             # find the index of the randomly selected switch token from the original tokenized quote
             idx = original_tokens.index(switch_token)  
-            # switch_tokens is a tuple, convert to a mutable type since we want to modify the middle element
+            # switch_token is a tuple, convert to a mutable type since we want to modify the middle element
             switch_token = list(switch_token)
             switch_token[1] = (replace_word, "")  # new pos tag value is irrelevant
             original_tokens[idx] = switch_token
