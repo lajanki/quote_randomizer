@@ -28,9 +28,9 @@ def main(args):
         print("quotes.db contains:")
         db.get_size()
 
-    #TODO: display correct tagset
     elif args.tags:
-        nltk.help.upenn_tagset()
+        show_universal_tagset()
+
 
 
 # ============================================================================
@@ -77,6 +77,23 @@ def randomize_fact():
     except IOError as err:
         print("ERROR: database doesn't exist, create it with --build-quote-database")
 
+def show_universal_tagset():
+    print("Universal tagset, https://www.nltk.org/book/ch05.html")
+    print("""
+        Tag	Meaning             English Examples
+        ADJ	adjective	    new, good, high, special, big, local
+        ADP	adposition	    on, of, at, with, by, into, under
+        ADV	adverb	            really, already, still, early, now
+        CONJ    conjunction	    and, or, but, if, while, although
+        DET	determiner, article the, a, some, most, every, no, which
+        NOUN	noun	            year, home, costs, time, Africa
+        NUM	numeral	            twenty-four, fourth, 1991, 14:24
+        PRT	particle	    at, on, out, over per, that, up, with
+        PRON	pronoun	            he, their, her, its, my, I, us
+        VERB	verb	            is, say, told, given, playing, would
+        .	punctuation         . , ; !
+        X	other	            ersatz, esprit, dunno, gr8, univeristy
+    """)
 
 
 
@@ -85,7 +102,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A quote randomizer.")
     parser.add_argument("--quote", help="Generate a randomized quote.", action="store_true")
     parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
-    parser.add_argument("--build-quote-database", action="store_true", help="""Fills the database from quotes.txt.""")
+    parser.add_argument("--build-quote-database", action="store_true", help="Fills the database from quotes.txt.")
     parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
     parser.add_argument("--verbose", help="Print additional randomization information", action="store_true")
     parser.add_argument(
