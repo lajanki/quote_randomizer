@@ -22,8 +22,8 @@ def main(args):
         randomize_fact()
 
     elif args.size:
-        logging.info("quotes.db contains:")
-        db.get_size()
+        size = db.get_size()
+        logging.info("quotes.db contains %d quotes", size)
 
     elif args.tags:
         show_universal_tagset()
@@ -55,8 +55,6 @@ def randomize_quote():
     print(f"{quote}\n--{author}")
     if args.verbose:
         print("original:", res.old_quote)
-
-
 
 def randomize_fact():
     """Create a new randomized fact."""

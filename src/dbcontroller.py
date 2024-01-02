@@ -123,12 +123,12 @@ class Controller:
         invalid = self._find_invalid()
         total = invalid.duplicates + invalid.invalid
         if total:
-            print("""ERROR: found the following invalid entries in quotes.txt.
+            logging.warning("""Found the following invalid entries in quotes.txt.
             Check for extra whitespace and duplicates and try again.""")
             for item in total:
                 print(item)
 
-            raise ValueError("Invalid data in quotes.txt:\n")
+            raise ValueError("Invalid data in quotes.txt")
 
     def _find_invalid(self):
         """Find various types of invalid entries in quotes.txt (not from the database!).
@@ -172,4 +172,5 @@ class Controller:
         with self.con:
             self.cur.execute("SELECT COUNT(quote) FROM quotes")
             size = self.cur.fetchone()
-            print("quotes:", size[0])
+
+            return size[0]
