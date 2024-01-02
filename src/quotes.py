@@ -15,7 +15,7 @@ from src import dbcontroller
 from src import utils
 
 
-class Randomizer(object):
+class Randomizer:
     """A base randomizer class. Splits sentances into POS tagged words analyzes the result and
     randomly switches a number of words to with matching POS tags using built-in nltk data structure.
     """ 
