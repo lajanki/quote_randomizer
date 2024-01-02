@@ -1,16 +1,19 @@
 # Project entrypoint. Prints generated quotes/songs on screen.
 
 import argparse
+import logging
 import sys
 
 from src import quotes
 from src import dbcontroller
 
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+
 def main(args):
     """Process command line arguments."""
-    if args.build_quote_database:
-        build_quote_database()
+    if args.build_database:
+        build_database()
 
     elif args.quote:
         randomize_quote()
@@ -19,7 +22,7 @@ def main(args):
         randomize_fact()
 
     elif args.size:
-        print("quotes.db contains:")
+        logging.info("quotes.db contains:")
         db.get_size()
 
     elif args.tags:
@@ -30,32 +33,30 @@ def main(args):
 # ============================================================================
 # Define a function for each command line arg #
 # ==============================================
-def build_quote_database():
-    """Drop all existing data from quotes.db refill it from quotes.txt."""
-    # First, check quotes.txt integrity, raises ValueError if not valid
-    db.validate_quotes()
+def build_database():
+    """Drop all existing data from quotes.db and refill it from quotes.txt."""
+    db.validate_source_data()
 
-    print("Creating quotes.db")
+    logging.info("Creating quotes.db")
     db.create_quote_database()
 
-    print("Adding quotes to the dictionary, this may take a while...")
+    logging.info("Adding quotes to the database.")
     db.insert_quotes()
     db.insert_pos_map()
 
 def randomize_quote():
     """Create a new randomized quote or a fact."""
-    try:
-        randomizer = quotes.Randomizer()
-        res = randomizer.generate()
-        quote = res.new_quote
-        author = res.author
 
-        print(quote + "\n--" + author)
-        if args.verbose:
-            print("original:", res.old_quote)
+    randomizer = quotes.Randomizer()
+    res = randomizer.generate()
+    quote = res.new_quote
+    author = res.author
 
-    except IOError as err:
-        print("ERROR: database doesn't exist, create it with --build-quote-database")
+    print(f"{quote}\n--{author}")
+    if args.verbose:
+        print("original:", res.old_quote)
+
+
 
 def randomize_fact():
     """Create a new randomized fact."""
@@ -69,7 +70,7 @@ def randomize_fact():
             print("original:", res.old_quote)
 
     except IOError as err:
-        print("ERROR: database doesn't exist, create it with --build-quote-database")
+        logging.error("database doesn't exist, create it with --build-database")
 
 def show_universal_tagset():
     print("Universal tagset, https://www.nltk.org/book/ch05.html")
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A quote randomizer.")
     parser.add_argument("--quote", help="Generate a randomized quote.", action="store_true")
     parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
-    parser.add_argument("--build-quote-database", action="store_true", help="Fills the database from quotes.txt.")
+    parser.add_argument("--build-database", action="store_true", help="Fills the database from quotes.txt.")
     parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
     parser.add_argument("--verbose", help="Print additional randomization information", action="store_true")
     parser.add_argument(
