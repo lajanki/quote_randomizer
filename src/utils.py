@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 import os.path
 
 import collections
@@ -10,7 +7,7 @@ from nltk.corpus import brown
 
 PATH_TO_SRC = os.path.abspath(os.path.dirname(__file__))
 PATH_TO_DB = os.path.join(PATH_TO_SRC, "..", "quotes.db")
-PATH_TO_QUOTES_TXT = os.path.join(PATH_TO_SRC, "..", "quotes.txt")
+PATH_TO_QUOTES_TXT = os.path.join(PATH_TO_SRC, "..", "data", "quotes.txt")
 
 # determine the tagset to use for determining POS tags,
 # see https://github.com/slavpetrov/universal-pos-tags
