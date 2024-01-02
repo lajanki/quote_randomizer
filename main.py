@@ -1,14 +1,8 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-Project entrypoint. Prints generated quotes/songs on screen.
-"""
+# Project entrypoint. Prints generated quotes/songs on screen.
 
 import argparse
 import sys
 
-import nltk
 from src import quotes
 from src import dbcontroller
 
@@ -94,8 +88,6 @@ def show_universal_tagset():
         .	punctuation         . , ; !
         X	other	            ersatz, esprit, dunno, gr8, univeristy
     """)
-
-
 
 
 if __name__ == "__main__":

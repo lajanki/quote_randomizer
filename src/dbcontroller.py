@@ -1,16 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-A library module for interacting with the quote database.
-"""
+# A library module for interacting with the quote database.
 
 import sqlite3 as lite
 import collections
 import random
 import os
 
-import nltk
 from src import utils
 
 
