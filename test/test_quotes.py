@@ -31,7 +31,7 @@ def test_switch_tokens_replaces_words_with_matching_pos_tags(randomizer):
     quote = "The aim of education is the knowledge, not of facts, but of values."
     tokens = utils.tokenize_normalize_and_tag(quote)
 
-    # ugh, copy-paste code from switch_tokens, maybe split into function?
+    # copy pasted code from switch_tokens, maybe split into function?
     valid_tokens = [token for token in tokens if token[1][1] not in (".", "CUSTOM1")]
     change_degree = randomizer.get_change_degree(valid_tokens)
     tokens_to_switch = random.sample(valid_tokens, change_degree)
@@ -46,7 +46,7 @@ def test_change_degree_for_short_string(randomizer):
     """The computed change degree for a short string should be 1"""
     tokens = "Short message".split()
     change_degree = randomizer.get_change_degree(tokens)
-    
+
     assert change_degree == 1
 
 def test_change_degree_in_range(randomizer):
