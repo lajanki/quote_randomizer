@@ -2,7 +2,6 @@
 
 import argparse
 import logging
-import sys
 
 from src import quotes
 from src import dbcontroller
@@ -24,9 +23,6 @@ def main(args):
     elif args.size:
         size = db.get_size()
         logging.info("quotes.db contains %d quotes", size)
-
-    elif args.tags:
-        show_universal_tagset()
 
 
 
@@ -76,7 +72,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A quote randomizer.")
     parser.add_argument("--quote", help="Generate a randomized quote.", action="store_true")
     parser.add_argument("--fact", help="Generate a randomized fact.", action="store_true")
-    parser.add_argument("--build-database", action="store_true", help="Fills the database from quotes.txt.")
+    parser.add_argument("--build-database", action="store_true", help="Create the quote database from quotes.txt.")
     parser.add_argument("--size", help="Shows the size of the databse.", action="store_true")
     parser.add_argument("--verbose", help="Print additional randomization information", action="store_true")
     args = parser.parse_args()
