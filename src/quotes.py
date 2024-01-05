@@ -1,17 +1,12 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+# Picks a real quote or a fact from a database, chooses 1-3 words
+# and randomly switches them to new ones with matching part-os-speech tags. Natural language toolkit
+# library (nltk) is used to tag words into POS classes in order to choose similar words as replacements.
 
-"""
-Picks a real quote or a fact from a database, chooses 1-3 words
-and randomly switches them to new ones with matching part-os-speech tags. Natural language toolkit
-library (nltk) is used to tag words into POS classes in order to choose similar words as replacements.
+# Currently uses the simplified, "universal tagset" (see, https://www.nltk.org/book/ch05.html
+# and https://www.nltk.org/_modules/nltk/tag/mapping.html). This doesn't differentiate between verb tenses or modes
+# or noun types (proper/common). Should this be changed to more fine grainde tagset such as "upenn"?
 
-Currently uses the simplified, "universal tagset" (see, https://www.nltk.org/book/ch05.html
-and https://www.nltk.org/_modules/nltk/tag/mapping.html). This doesn't differentiate between verb tenses or modes
-or noun types (proper/common). Should this be changed to more fine grainde tagset such as "upenn"?
-"""
 
-import nltk
 import random
 import os.path
 import collections
@@ -20,7 +15,7 @@ from src import dbcontroller
 from src import utils
 
 
-class Randomizer(object):
+class Randomizer:
     """A base randomizer class. Splits sentances into POS tagged words analyzes the result and
     randomly switches a number of words to with matching POS tags using built-in nltk data structure.
     """ 
@@ -128,9 +123,3 @@ class Randomizer(object):
         else:
             change_degree = 3
         return change_degree
-
- 
-
-
-
-

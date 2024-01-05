@@ -1,20 +1,14 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+# A library module for interacting with the quote database.
 
-"""
-A library module for interacting with the quote database.
-"""
-
-import sqlite3 as lite
 import collections
+import logging
 import random
-import os
+import sqlite3 as lite
 
-import nltk
 from src import utils
 
 
-class Controller(object):
+class Controller:
 
     def __init__(self):
         self.con = lite.connect(utils.PATH_TO_DB)
@@ -55,18 +49,23 @@ class Controller(object):
 
     def get_quote(self):
         """SELECT and return a random (quote, author) tuple from the database."""
-        with self.con:
-            self.cur.execute("SELECT * FROM quotes ORDER BY RANDOM()")
-            row = self.cur.fetchone()
+        try:
+            with self.con:
+                self.cur.execute("SELECT * FROM quotes ORDER BY RANDOM()")
+                row = self.cur.fetchone()
+        except lite.OperationalError as e:
+            raise RuntimeError("database doesn't exist, create it with --build-database") from e
 
         return row
 
     def get_fact(self):
         """SELECT and return a random fact from the database."""
-        with self.con:
-            self.cur.execute(
-                "SELECT * FROM quotes WHERE author='fact' ORDER BY RANDOM()")
-            row = self.cur.fetchone()
+        try:
+            with self.con:
+                self.cur.execute("SELECT * FROM quotes WHERE author='fact' ORDER BY RANDOM()")
+                row = self.cur.fetchone()
+        except lite.OperationalError as e:
+            raise RuntimeError("database doesn't exist, create it with --build-database") from e
 
         return row
 
@@ -113,36 +112,36 @@ class Controller(object):
         with open(utils.PATH_TO_QUOTES_TXT) as f:
             lines = f.readlines()
 
-        # strip comments, empty lines and authors
+        # strip comments and empty lines
         lines = [line.rstrip("\n").split(";")
                  for line in lines if line != "\n" and not line.startswith("--")]
 
         return lines
 
-    def validate_quotes(self):
+    def validate_source_data(self):
         """Check quotes.txt for duplicates or otherwise malformed data."""
-        invalid = self.find_invalid()
-        critical = invalid.dupes + invalid.malformed
-        if critical:
-            print("""ERROR: found the following invalid entries in quotes.txt.
+        invalid = self._find_invalid()
+        total = invalid.duplicates + invalid.invalid
+        if total:
+            logging.warning("""Found the following invalid entries in quotes.txt.
             Check for extra whitespace and duplicates and try again.""")
-            for item in critical:
+            for item in total:
                 print(item)
 
-            raise ValueError("Invalid data in quotes.txt:\n")
+            raise ValueError("Invalid data in quotes.txt")
 
-    def find_invalid(self):
-        """Find various types of invalid entries in quotes.txt(and not from the database itself).
+    def _find_invalid(self):
+        """Find various types of invalid entries in quotes.txt (not from the database!).
         Each quote should:
           1 be short enough to fit in a tweet
-          2 be split into two aprts as quote; author
+          2 be ;-seprated as quote;author
           3 be unique
         Note: finding long quotes is not entirely reliable as the randomized quote may still be too long to tweet.
         Return:
             a dict of lists for each type of invalid entries.
         """
         long_ = []
-        malformed = []
+        invalid = []
         dupes = []
         seen = []
 
@@ -152,9 +151,9 @@ class Controller(object):
             if len(" ".join(line)) > 135:
                 long_.append(line)
 
-            # split by ; into two parts?
-            if len(line) != 2:  # line is already split by ";" into a tuple
-                malformed.append(line)
+            # ;-separated into two?
+            if len(line) != 2:
+                invalid.append(line)
 
             # duplicates?
             quote = line[0]
@@ -163,8 +162,8 @@ class Controller(object):
             seen.append(quote)
 
         InvalidQuoteContainer = collections.namedtuple(
-            "InvalidQuoteContainer", ["dupes", "long", "malformed"])
-        return InvalidQuoteContainer(dupes=dupes, long=long_, malformed=malformed)
+            "InvalidQuoteContainer", ["duplicates", "long", "invalid"])
+        return InvalidQuoteContainer(duplicates=dupes, long=long_, invalid=invalid)
 
     def get_size(self):
         """Print information on the size of the database.
@@ -173,4 +172,5 @@ class Controller(object):
         with self.con:
             self.cur.execute("SELECT COUNT(quote) FROM quotes")
             size = self.cur.fetchone()
-            print("quotes:", size[0])
+
+            return size[0]
